@@ -2,9 +2,9 @@ import hassapi as hass
 import datetime
 
 """
-Front porch automations.
+Outside lighting automations.
 """
-class FrontPorch(hass.Hass):
+class OutsideLighting(hass.Hass):
     
     """
     Sets up the automation.

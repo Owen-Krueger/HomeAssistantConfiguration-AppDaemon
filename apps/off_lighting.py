@@ -13,15 +13,15 @@ class OffLighting(hass.Hass):
         self.all_off = self.args["all_off"]
         self.all_off_dynamic = self.args["all_off_dynamic"]
         self.allison = self.args["allison"]
+        self.downstairs_active = self.args["downstairs_active"]
         self.downstairs_lights = self.args["downstairs_lights"]
-        self.downstairs_tv_on = self.args["downstairs_tv_on"]
         self.mode_guest = self.args["mode_guest"]
         self.office_lights = self.args["office_lights"]
         self.owen = self.args["owen"]
         self.owen_computer_active = self.args["owen_computer_active"]
         self.owen_phone_charger_type = self.args["owen_phone_charger_type"]
         self.night_lighting = self.args["night_lighting"]
-        self.upstairs_tv_on = self.args["upstairs_tv_on"]
+        self.upstairs_active = self.args["upstairs_active"]
         self.upstairs_living_area_off = self.args["upstairs_living_area_off"]
         self.vacation_mode = self.args["vacation_mode"]
 
@@ -63,12 +63,12 @@ class OffLighting(hass.Hass):
     """
     def turn_off_lights_based_on_state(self):
         # Upstairs Living Area (Kitchen and living room)
-        if not self.utils.is_entity_on(self.upstairs_tv_on):
+        if not self.utils.is_entity_on(self.upstairs_active):
             self.turn_on(self.upstairs_living_area_off)
         
         # Downstairs Lights
         if (self.utils.is_entity_on(self.downstairs_lights) and
-            not self.utils.is_entity_on(self.downstairs_tv_on)):
+            not self.utils.is_entity_on(self.downstairs_active)):
             self.turn_off(self.downstairs_lights)
 
         # Office Lights
