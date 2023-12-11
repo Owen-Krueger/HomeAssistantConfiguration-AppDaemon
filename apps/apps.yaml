@@ -90,6 +90,8 @@ ping_entities:
       ping: button.downstairs_lights_ping
     - entity: switch.front_porch_lights
       ping: button.front_porch_lights_ping
+    - entity: switch.deck_string_lights
+      ping: button.deck_string_lights_ping
     - entity: switch.garage_lights
       ping: button.garage_lights_ping
     - entity: switch.kitchen_lights
