@@ -57,3 +57,14 @@ class Utils(hass.Hass):
             self.turn_on(entity_to_sync)
         else:
             self.turn_off(entity_to_sync)
+
+    """
+    If the state of `entity_to_test` matches `expected_state`, turn on or off
+    `entity_to_set` based on `turn_on`.
+    """
+    def set_state_conditionally(self, entity_to_test, expected_state: str, entity_to_set, state_to_set: str):
+        current_state = self.get_state(entity_to_test)
+        self.log("Setting state conditionally. Current state: {} Expected State: {} New State: {}", current_state, expected_state, state_to_set)
+        
+        if current_state == expected_state and current_state != state_to_set:
+            self.set_state(entity_to_set, state=state_to_set)

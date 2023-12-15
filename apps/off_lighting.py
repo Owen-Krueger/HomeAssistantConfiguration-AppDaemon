@@ -62,19 +62,12 @@ class OffLighting(hass.Hass):
     Turns off any lights that are on and don't have activity in that room.
     """
     def turn_off_lights_based_on_state(self):
-        # Upstairs Living Area (Kitchen and living room)
-        if not self.utils.is_entity_on(self.upstairs_active):
-            self.turn_on(self.upstairs_living_area_off)
-        
-        # Downstairs Lights
-        if (self.utils.is_entity_on(self.downstairs_lights) and
-            not self.utils.is_entity_on(self.downstairs_active)):
-            self.turn_off(self.downstairs_lights)
-
-        # Office Lights
-        if (self.utils.is_entity_on(self.office_lights) and
-            not self.utils.is_entity_on(self.owen_computer_active)):
-            self.turn_off(self.office_lights)
+        self.utils.set_state_conditionally(self.upstairs_active, "off",
+            self.upstairs_living_area_off, "on")
+        self.utils.set_state_conditionally(self.downstairs_active, "off",
+            self.downstairs_lights, "off")
+        self.utils.set_state_conditionally(self.owen_computer_active, "off",
+            self.office_lights, "off")
 
     """
     At night, turn off all lights in the house once people are sleeping.
