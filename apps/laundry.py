@@ -19,7 +19,7 @@ class Laundry(hass.Hass):
     Attempts to notify users about load being complete.
     If nobody is home, notifies both users.
     """
-    def notify_users(self, entity, attribute, old, new, kwargs):
+    def notify_users(self, entity: str, attribute: str, old: str, new: str, kwargs):
         device = "washer" if entity == self.washer else "dryer"
         message = "The {} has completed!".format(device)
 

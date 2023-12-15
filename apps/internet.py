@@ -24,7 +24,7 @@ class Internet(hass.Hass):
     Restarts modem smart plug. Then, sets a callback to check if the internet
     is up in 5 minutes or restarts router.
     """
-    def restart_modem(self, entity, attribute, old, new, kwargs):
+    def restart_modem(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.restart_entity(self.internet_modem_smart_plug)
 
         # Router smart plug needs to be running a non-wifi based protocol
@@ -44,7 +44,7 @@ class Internet(hass.Hass):
     Restarts input entity by turning it off and then scheduling a callback to
     run in 15 seconds to turn the entity back on.
     """
-    def restart_entity(self, entity):
+    def restart_entity(self, entity: str):
         if (self.utils.recently_triggered(entity, 300)):
             self.log("{} already manually restarted. Not restarting.".format(entity))
             return

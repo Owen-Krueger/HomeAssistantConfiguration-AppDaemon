@@ -17,7 +17,7 @@ class PingEntities(hass.Hass):
     """
     Wraps `ping_entity_inner`. This is called by `listen_state`.
     """
-    def ping_entity(self, entity, attribute, old, new, **kwargs):
+    def ping_entity(self, entity: str, attribute: str, old: str, new: str, **kwargs):
         kwargs["entity"] = entity
         self.ping_entity_inner(**kwargs)
     

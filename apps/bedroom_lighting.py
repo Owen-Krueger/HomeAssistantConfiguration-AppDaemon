@@ -21,7 +21,7 @@ class BedroomLighting(hass.Hass):
     On bedroom bedside button clicked, toggle the bedroom lamps.
     If late and bedroom lights on, also turn them off.
     """
-    def on_bedside_button_click(self, event_name, data, kwargs):
+    def on_bedside_button_click(self, event_name: str, data, kwargs):
         self.toggle(self.bedroom_lamps)
 
         if self.is_late() and self.utils.is_entity_on(self.bedroom_lights):
@@ -30,7 +30,7 @@ class BedroomLighting(hass.Hass):
     """
     If late, turn on bedroom lamps.
     """
-    def on_bedroom_lights_turned_off(self, entity, attribute, old, new, kwargs):
+    def on_bedroom_lights_turned_off(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if not self.is_late():
             return
 

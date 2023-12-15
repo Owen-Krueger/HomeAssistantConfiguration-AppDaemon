@@ -15,7 +15,7 @@ class UnavailableEntities(hass.Hass):
     """
     Notify Owen that the entity has become unavailable.
     """
-    def notify_owen(self, entity, attribute, old, new, kwargs):
+    def notify_owen(self, entity: str, attribute: str, old: str, new: str, kwargs):
         message = "{} is unavailable.".format(entity)
         self.log("{} Notifying.".format(message))
         self.notify(message, name="owen")

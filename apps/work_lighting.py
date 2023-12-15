@@ -24,7 +24,7 @@ class WorkLighting(hass.Hass):
     Automations when computer is active.
     Turns on office lights if they're currently off.
     """
-    def on_computer_active(self, entity, attribute, old, new, kwargs):
+    def on_computer_active(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Executing automations due to computer being active.")
 
         if not self.utils.is_entity_on(self.office_lights):
@@ -34,7 +34,7 @@ class WorkLighting(hass.Hass):
     Automations office lights turned off. Turns on dining room lights
     if lunchtime and they're currently off.
     """
-    def on_office_light_off(self, entity, attribute, old, new, kwargs):
+    def on_office_light_off(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Executing automations due to office lights being turned off.")
 
         # If Owen is home, it's a work day, and it's around lunch time.

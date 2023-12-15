@@ -38,7 +38,7 @@ class TelevisionLighting(hass.Hass):
     On living room automations boolean change, cancel listeners if they're active and
     re-set them up if living room light should be automated
     """
-    def on_boolean_change(self, entity, attribute, old, new, kwargs):
+    def on_boolean_change(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Living room automations boolean changed: {}".format(new))
 
         if old == "on": # Cancel old listeners if they were active.
@@ -53,7 +53,7 @@ class TelevisionLighting(hass.Hass):
     """
     Turn on lights depending on which TV is on.
     """
-    def turn_on_lights(self, entity, attribute, old, new, kwargs):
+    def turn_on_lights(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if not self.now_is_between("05:30:00", "21:00:00"): # So lights don't turn on while we're sleeping.
             self.log("{} on but it's late. Not turning lights on.".format(entity))
             return
@@ -73,7 +73,7 @@ class TelevisionLighting(hass.Hass):
     """
     Turn off living room lamps if they're currently on.
     """
-    def turn_off_living_room_lamps(self, entity, attribute, old, new, kwargs):
+    def turn_off_living_room_lamps(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if self.utils.is_entity_on(self.living_room_lamps):
             self.log("Turning off living room lamps due to Upstairs TV being off.")
             self.turn_off(self.living_room_lamps)
@@ -82,7 +82,7 @@ class TelevisionLighting(hass.Hass):
     Turns on the downstairs lights if it's a workday and a period where Owen
     typically walks from upstairs to downstairs.
     """
-    def turn_on_downstairs_lights_during_work(self, entity, attribute, old, new, kwargs):
+    def turn_on_downstairs_lights_during_work(self, entity: str, attribute: str, old: str, new: str, kwargs):
         # If Owen is home, it's a work day, and it's around lunch time.
         if (not self.utils.is_entity_on(self.mode_guest) and
             not self.utils.is_entity_on(self.downstairs_lights) and

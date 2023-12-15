@@ -25,7 +25,7 @@ class DownstairsSunLighting(hass.Hass):
     If sun is at or above 10 degrees, set lights to 100% if not already.
     If sun is below 10 degrees, set lights to 50% if not already.
     """
-    def set_downstairs_light_level(self, entity, attribute, old, new, cb_args):
+    def set_downstairs_light_level(self, entity: str, attribute: str, old: str, new: str, cb_args):
         brightness_str = self.get_state(self.downstairs_lights, attribute="brightness")
         if brightness_str == None: # Light is most likely off
             return

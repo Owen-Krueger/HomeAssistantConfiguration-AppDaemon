@@ -39,7 +39,7 @@ class OutsideLighting(hass.Hass):
     On time change, cancel the timer and re-set it up so it executes
     at the new time. Sets override boolean if necessary.
     """
-    def on_porch_off_time_change(self, entity, attribute, old, new, kwargs):
+    def on_porch_off_time_change(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Setting new execution time: {}".format(new))
         self.cancel_timer(self.handle)
         self.handle = self.run_daily(self.turn_off_front_porch_time_based, new)
@@ -53,7 +53,7 @@ class OutsideLighting(hass.Hass):
     On override boolean changed, check if turned off. If turned off, reset
     the execution time to the default time of 10:00 PM.
     """
-    def on_override_boolean_turned_off(self, entity, attribute, old, new, kwargs):
+    def on_override_boolean_turned_off(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Override turned off. Resetting time to 10:00 PM")
         self.set_state(self.porch_off_time, state=self.default_time)
 
@@ -72,7 +72,7 @@ class OutsideLighting(hass.Hass):
     Turns on porch if someone is close to home, lights are off, and it's late at
     night.
     """
-    def turn_on_front_porch_location_based(self, entity, attribute, old, new, kwargs):
+    def turn_on_front_porch_location_based(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if self.is_late() and not self.utils.is_entity_on(self.front_porch_switch):
             self.log("Turning on front porch lights due to someone getting close to home at night.")
             self.turn_on_front_porch({})
@@ -94,7 +94,7 @@ class OutsideLighting(hass.Hass):
     Turns off front porch lights if they're on, someone just got home, and it's
     late at night.
     """
-    def turn_off_front_porch_location_based(self, entity, attribute, old, new, kwargs):
+    def turn_off_front_porch_location_based(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if self.is_late() and self.utils.is_entity_on(self.front_porch_switch):
             self.log("Turning off front porch lights, due to lights being on and someone getting home late at night.")
             self.turn_off_front_porch()

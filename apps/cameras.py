@@ -28,7 +28,7 @@ class Cameras(hass.Hass):
     """
     Turns on the cameras if nobody is home and the triggered is moving away.
     """
-    def turn_on_cameras(self, entity, attribute, old, new, kwargs):
+    def turn_on_cameras(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if self.someone_home():
             return
         
@@ -37,7 +37,7 @@ class Cameras(hass.Hass):
     """
     Turns off the cameras if someone is home.
     """
-    def turn_off_cameras(self, entity, attribute, old, new, kwargs):
+    def turn_off_cameras(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if not self.someone_home():
             return
 
@@ -62,7 +62,7 @@ class Cameras(hass.Hass):
     """
     Turns off or on the camera, depending on input and current state.
     """
-    def turn_off_on_camera(self, entity, turn_on: bool) -> bool:
+    def turn_off_on_camera(self, entity: str, turn_on: bool) -> bool:
         if turn_on and not self.utils.is_entity_on(entity):
             self.turn_on(entity)
             return True

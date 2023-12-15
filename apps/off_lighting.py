@@ -34,7 +34,7 @@ class OffLighting(hass.Hass):
     Checks who is home. If everyone is gone, all lights are turned off.
     If only Allison is gone and Owen is at work, turn on office lighting.
     """
-    def turn_off_lights(self, entity, attribute, old, new, kwargs):
+    def turn_off_lights(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Executing automation.")
         if self.utils.is_entity_on(self.mode_guest):
             return
@@ -53,7 +53,7 @@ class OffLighting(hass.Hass):
     """
     Turns on night lighting scene.
     """
-    def active_night_lighting(self, event_name, data, kwargs):
+    def active_night_lighting(self, event_name: str, data, kwargs):
         self.log("Turning on night lighting.")
         self.turn_on(self.night_lighting)
         self.turn_off_lights_based_on_state()
@@ -72,7 +72,7 @@ class OffLighting(hass.Hass):
     """
     At night, turn off all lights in the house once people are sleeping.
     """
-    def turn_off_lights_at_night(self, entity, attribute, old, new, kwargs):
+    def turn_off_lights_at_night(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if (not self.utils.is_entity_on(self.vacation_mode) and
             self.utils.is_entity_home(self.owen) and
             self.now_is_between("20:30:00", "03:00:00")):

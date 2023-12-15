@@ -17,7 +17,7 @@ class ToggleableLighting(hass.Hass):
     """
     Turns light on if currently off and turns light off if currently on.
     """
-    def toggle_light(self, event_name, data, kwargs):
+    def toggle_light(self, event_name: str, data, kwargs):
         lights = kwargs["lights"]
 
         first_light = lights[0]

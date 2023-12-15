@@ -19,7 +19,7 @@ class OwenPhoneWifi(hass.Hass):
     """
     Notifies Owen if he's at home without Wifi on.
     """
-    def notify_owen(self, entity, attribute, old, new, kwargs):
+    def notify_owen(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if (self.utils.is_entity_home(self.owen) and self.get_state(self.phone_network) == "cellular"):
             self.log("Notifying Owen that he's home with cellular on.")
             self.notify("Your phone is currently connected to cellular data", name = "owen")
