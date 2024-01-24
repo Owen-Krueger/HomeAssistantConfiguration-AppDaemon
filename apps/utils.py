@@ -68,3 +68,17 @@ class Utils(hass.Hass):
 
         if current_state == expected_state and current_state != state_to_set:
             self.set_state(entity_to_set, state=state_to_set)
+    
+    """
+    input_number is represented as a float string in HA. To convert these values
+    to an integer, we must first cast the string to a float, and then cast it
+    to an int.
+    """
+    def get_input_number_integer(self, state: str) -> int:
+        return int(float(state))
+
+    """
+    Notifies Owen with the provided message.
+    """
+    def notify_owen(self, message: str) -> None:
+        self.notify(message, name = "owen")
