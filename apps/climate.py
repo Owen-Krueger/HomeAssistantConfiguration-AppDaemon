@@ -201,7 +201,7 @@ class Climate(hass.Hass):
     Notify user if notify user boolean is set.
     """
     def notify_user(self, message: str) -> None:
-        if bool(self.get_state(self.entities.notify_user)):
+        if self.utils.is_entity_on(self.entities.notify_user):
             self.utils.notify_owen(message)
 
     """
