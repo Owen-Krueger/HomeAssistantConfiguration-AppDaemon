@@ -1,5 +1,5 @@
 import hassapi as hass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 """
 Utility functions to be used by other scripts.
@@ -82,3 +82,12 @@ class Utils(hass.Hass):
     """
     def notify_owen(self, message: str) -> None:
         self.notify(message, name = "owen")
+
+    """
+    Adds input seconds to the input time by converting it to a datetime object,
+    adding the seconds, and then converting back to a time object.
+    """
+    def add_seconds(self, time: time, seconds: int) -> time:
+        date = datetime.combine(datetime(2000, 1, 1), time)
+        date - timedelta(seconds=seconds)
+        return date.time()
