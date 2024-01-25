@@ -186,7 +186,7 @@ class ClimateState:
         if (int(self.hass.get_state(self.entities.zone_near_home)) == 0 and 
             int(self.hass.get_state(self.entities.zone_home)) == 0): # Nobody in either zones means people are far away.
             state = ThermostatState.Gone
-        elif not self.hass.anyone_home():
+        elif not self.hass.anyone_home(person=True):
             state = ThermostatState.Away
 
         self.thermostat_state = state
