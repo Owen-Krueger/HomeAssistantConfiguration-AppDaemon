@@ -136,9 +136,10 @@ class Climate(hass.Hass):
         set_temperature = self.get_set_temperature()
         is_heat_mode = self.is_heat_mode()
 
-        if ((previous_temperature < current_temperature) if is_heat_mode else (previous_temperature > current_temperature) and
+        self.log("Checking temperature deviation. Old: {} New: {} Set: {}".format(previous_temperature, current_temperature, set_temperature))
+        if (((previous_temperature < current_temperature) if is_heat_mode else (previous_temperature > current_temperature)) and
             abs(current_temperature - set_temperature) >= 2):
-            self.utils.notify_owen("House is too {}".format("hot" if is_heat_mode else "cool"))
+            self.utils.notify_owen("House is too {} (Current: {} Set: {})".format("hot" if is_heat_mode else "cool", current_temperature, set_temperature))
 
     """
     Sets the temperature of the thermostat based on the state.
@@ -146,7 +147,6 @@ class Climate(hass.Hass):
     def set_temperature(self) -> int:
         current_temperature: int = self.get_set_temperature()
         new_temperature = self.get_new_temperature()
-
         self.log("Temperature update requested. Old: {} New: {}".format(current_temperature, new_temperature))
 
         if current_temperature != new_temperature:
