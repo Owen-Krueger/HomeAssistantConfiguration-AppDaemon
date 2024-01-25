@@ -81,6 +81,7 @@ class Climate(hass.Hass):
         self.listen_state(self.on_person_state_updated, self.entities.zone_near_home, duration = 300) # 5 minutes.
         self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
         self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
+        self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature")
 
     """
     On climate day time set, cancel previous timer and set up a new one for the new time.
@@ -126,10 +127,24 @@ class Climate(hass.Hass):
         self.notify_user("Climate: People are {}. Temperature set to {}.".format(self.thermostat_state.name, temperature))
 
     """
+    On the current temperature of the thermostat changed, check if it's deviated too much
+    from what's currently set.
+    """
+    def on_current_temperature_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        previous_temperature = int(old)
+        current_temperature = int(new)
+        set_temperature = self.get_set_temperature()
+        is_heat_mode = self.is_heat_mode()
+
+        if ((previous_temperature < current_temperature) if is_heat_mode else (previous_temperature > current_temperature) and
+            abs(current_temperature - set_temperature) >= 2):
+            self.utils.notify_owen("House is too {}".format("hot" if is_heat_mode else "cool"))
+
+    """
     Sets the temperature of the thermostat based on the state.
     """
     def set_temperature(self) -> int:
-        current_temperature: int = int(self.get_state(self.entities.thermostat, attribute = "temperature"))
+        current_temperature: int = self.get_set_temperature()
         new_temperature = self.get_new_temperature()
 
         self.log("Temperature update requested. Old: {} New: {}".format(current_temperature, new_temperature))
@@ -195,7 +210,13 @@ class Climate(hass.Hass):
     Cool: 5
     """
     def get_offset(self, offset: int) -> int:
-        return offset * -1 if self.is_heat_mode else offset
+        return offset * -1 if self.is_heat_mode() else offset
+
+    """
+    Whether on not the thermostat is currently heating or cooling.
+    """
+    def is_heat_mode(self) -> bool:
+        return bool(self.get_state(self.entities.thermostat) == "heat")
 
     """
     Notify user if notify user boolean is set.
@@ -216,3 +237,9 @@ class Climate(hass.Hass):
     """
     def get_input_number_from_state(self, entity_id: str) -> int:
         return self.utils.get_input_number_integer(self.get_state(entity_id))
+
+    """
+    Gets the currently set temperature for the thermostat.
+    """
+    def get_set_temperature(self) -> int:
+        return int(self.get_state(self.entities.thermostat, attribute = "temperature"))
