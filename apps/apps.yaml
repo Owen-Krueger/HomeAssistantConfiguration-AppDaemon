@@ -50,8 +50,8 @@ internet:
 laundry:
   module: laundry
   class: Laundry
-  dryer: sensor.dryer_dryer_job_state
-  washer: sensor.washer_washer_job_state
+  dryer: sensor.dryer_dryer_machine_state
+  washer: sensor.washer_washer_machine_state
 off_lighting:
   module: off_lighting
   class: OffLighting
