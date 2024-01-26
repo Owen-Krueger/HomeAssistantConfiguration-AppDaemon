@@ -86,8 +86,8 @@ class Climate(hass.Hass):
 
         # We only want this automation running if people are home. Otherwise, 
         # the temperature probably will be deviating.
-        if self.anyone_home(person=True):
-            self.update_deviation_handler(True)
+        # if self.anyone_home(person=True):
+            # self.update_deviation_handler(True)
 
     """
     On climate day time set, cancel previous timer and set up a new one for the new time.
@@ -195,7 +195,7 @@ class Climate(hass.Hass):
             state = ThermostatState.Away
 
         self.thermostat_state = state
-        self.update_deviation_handler(state == ThermostatState.Home)
+        # self.update_deviation_handler(state == ThermostatState.Home)
 
     """
     Day is considered the time between the start time of the day temperature
