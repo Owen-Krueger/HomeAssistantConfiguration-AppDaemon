@@ -256,5 +256,7 @@ class Climate(hass.Hass):
     def update_deviation_handler(self, active: bool) -> None:
         if active and not self.deviation_listener_active:
             self.deviation_listener_handler = self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature")
+            self.deviation_listener_active = True
         elif not active and devitation_listener_active:
             self.cancel_listen_state(self.deviation_listener_handler)
+            self.deviation_listener_active = False
