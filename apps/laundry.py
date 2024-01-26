@@ -13,7 +13,9 @@ class Laundry(hass.Hass):
         self.dryer = self.args["dryer"]
 
         self.listen_state(self.notify_users, self.washer, new = "finish")
-        self.listen_state(self.notify_users, self.dryer, new = "finished")
+        # Usually, state becomes "finished", but occasionally
+        # goes from "cooling" to "none".
+        self.listen_state(self.notify_users, self.dryer, old = "cooling")
 
     """
     Attempts to notify users about load being complete.
