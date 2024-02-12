@@ -41,6 +41,13 @@ downstairs_sun_lighting:
   class: DownstairsSunLighting
   downstairs_lights: light.downstairs_lights
   sun: sun.sun
+holiday:
+  module: holiday
+  class: Holiday
+  dependencies: utils
+  allison: person.allison
+  holiday_mode: input_boolean.holiday_mode
+  christmas_tree_smart_plug: switch.christmas_tree_smart_plug
 internet:
   module: internet
   class: Internet
