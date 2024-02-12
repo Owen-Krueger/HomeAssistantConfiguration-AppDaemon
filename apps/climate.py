@@ -162,10 +162,12 @@ class Climate(hass.Hass):
         current_temperature = int(new)
         set_temperature = self.get_set_temperature()
         is_heat_mode = self.is_heat_mode()
+        temperature_difference = current_temperature - set_temperature
 
-        if (((previous_temperature < current_temperature) if is_heat_mode else (previous_temperature > current_temperature)) and
-            abs(current_temperature - set_temperature) >= 2):
-            self.utils.notify_owen(f"House is too {'hot' if is_heat_mode else 'cool'} (Current: {current_temperature} Set: {set_temperature})")
+        if is_heat_mode and temperature_difference >= 2:
+            self.utils.notify_owen(f"House is too hot! (Current: {current_temperature} Set: {set_temperature})")
+        elif not is_heat_mode and temperature_difference <= -2:
+            self.utils.notify_owen(f"House is too cold! (Current: {current_temperature} Set: {set_temperature})")
 
     """
     Sets the temperature of the thermostat based on the state.
