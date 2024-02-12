@@ -49,6 +49,12 @@ class ClimateEntities:
         self.zone_near_home = hass.args["zone_near_home"]
         self.notify_user = hass.args["notify_user"]
 
+"""
+Due to AppDaemon limitations, we can't listen for zone enter/exit events within this file. To get around
+this, we use helper functions in HomeAssistant's built-in Automations area. These automations trigger on
+zone events and set the thermostat state, which we are listening on state changes to trigger functions.
+HomeAssistant climate helper automations: https://github.com/Owen-Krueger/HomeAssistantConfiguration/blob/main/automation/climate.yaml
+"""
 class Climate(hass.Hass):
 
     entities: ClimateEntities
@@ -78,9 +84,7 @@ class Climate(hass.Hass):
         self.listen_state(self.on_thermostat_state_updated, self.entities.thermostat_state)
         self.listen_state(self.on_person_state_updated, self.entities.allison, new = "home")
         self.listen_state(self.on_person_state_updated, self.entities.owen, new = "home")
-        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, new = "away", duration = away_duration_seconds)
-        # self.listen_state(self.on_person_state_updated, self.entities.zone_near_home, duration = 300) # 5 minutes.
-        self.listen_event(self.on_zone_event, "zone", entity_id = self.entities.owen, zone = self.entities.zone_near_home)
+        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, old = "home", duration = away_duration_seconds)
         self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
         self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
 
@@ -141,20 +145,6 @@ class Climate(hass.Hass):
         self.update_deviation_handler(new_state == ThermostatState.Home)
 
         return new_state
-
-    """
-    When someone enters or leaves the zone, set the `people_gone` boolean
-    to help determine state.
-    """
-    def on_zone_event(self, event_name: str, data, args):
-        state: ThermostatState = ThermostatState[self.get_state(self.entities.thermostat_state)]
-        is_exit_event: bool = data["event"] == "leave"
-        anyone_home = self.anyone_home(person=True)
-
-        if is_exit_event and state != ThermostatState.Gone and not anyone_home:
-            self.set_state(self.entities.thermostat_state, state = ThermostatState.Gone.name)
-        elif not is_exit_event and state != ThermostatState.Away and not anyone_home:
-            self.set_state(self.entities.thermostat_state, state = ThermostatState.away.name)
 
     """
     On state updated, set temperature based on state.
@@ -273,4 +263,4 @@ class Climate(hass.Hass):
         if is_handler_active: # Cancel existing handler.
             self.cancel_listen_state(self.deviation_listener_handler)
         
-        self.deviation_listener_handler = self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature") if active else None
+        self.deviation_listener_handler = self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature", duration = 30) if active else None
