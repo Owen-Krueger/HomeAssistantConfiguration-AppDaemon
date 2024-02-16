@@ -182,7 +182,6 @@ work_lighting:
   mode_guest: input_boolean.mode_guest
   office_lights: switch.office_lights
   owen: person.owen
-  owen_computer_active: binary_sensor.owen_computer_active
 
 # Shared
 utils:
