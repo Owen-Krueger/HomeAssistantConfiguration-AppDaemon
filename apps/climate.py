@@ -144,8 +144,6 @@ class Climate(hass.Hass):
         self.set_state(self.entities.thermostat_state, state = new_state.name)
         self.update_deviation_handler(new_state == ThermostatState.Home)
 
-        return new_state
-
     """
     On state updated, set temperature based on state.
     """
@@ -163,6 +161,12 @@ class Climate(hass.Hass):
         set_temperature = self.get_set_temperature()
         is_heat_mode = self.is_heat_mode()
         temperature_difference = current_temperature - set_temperature
+        
+        # Don't notify if the temperature is not going in a concerning direction.
+        if is_heat_mode and current_temperature <= previous_temperature:
+            return
+        elif not is_heat_mode and current_temperature >= previous_temperature:
+            return
 
         if is_heat_mode and temperature_difference >= 2:
             self.utils.notify_owen(f"House is too hot! (Current: {current_temperature} Set: {set_temperature})")
@@ -265,4 +269,5 @@ class Climate(hass.Hass):
         if is_handler_active: # Cancel existing handler.
             self.cancel_listen_state(self.deviation_listener_handler)
         
-        self.deviation_listener_handler = self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature", duration = 30) if active else None
+        if active: # Set up a new handler.
+            self.deviation_listener_handler = self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature", duration = 300) if active else None
