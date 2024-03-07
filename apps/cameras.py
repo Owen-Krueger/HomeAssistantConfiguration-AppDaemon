@@ -12,24 +12,18 @@ class Cameras(hass.Hass):
         self.utils = self.get_app("utils")
         self.allison = self.args["allison"]
         self.cameras = self.args["cameras"]
+        self.cameras_on = self.args["cameras_on"]
         self.owen = self.args["owen"]
-        self.proximity_allison = self.args["proximity_allison"]
-        self.proximity_owen = self.args["proximity_owen"]
 
         self.listen_state(self.turn_off_cameras, self.allison, new = "home")
         self.listen_state(self.turn_off_cameras, self.owen, new = "home")
-        self.listen_state(self.turn_on_cameras, self.proximity_allison, 
-            old = lambda x : int(x) < 30,
-            new = lambda x : int(x) >= 30) # More than 30 miles away from home.
-        self.listen_state(self.turn_on_cameras, self.proximity_owen, 
-            old = lambda x : int(x) < 30,
-            new = lambda x : int(x) >= 30) # More than 30 miles away from home.
+        self.listen_state(self.turn_on_cameras, self.cameras_on, new = "on")
 
     """
     Turns on the cameras if nobody is home and the triggered is moving away.
     """
     def turn_on_cameras(self, entity: str, attribute: str, old: str, new: str, kwargs):
-        if self.someone_home():
+        if self.anyone_home(person=True):
             return
         
         self.turn_off_on_cameras(True)
@@ -38,10 +32,13 @@ class Cameras(hass.Hass):
     Turns off the cameras if someone is home.
     """
     def turn_off_cameras(self, entity: str, attribute: str, old: str, new: str, kwargs):
-        if not self.someone_home():
+        if not self.anyone_home(person=True):
             return
 
         self.turn_off_on_cameras(False)
+
+        if self.utils.is_entity_on(self.cameras_on):
+            self.turn_off(self.cameras_on)
 
     """
     Turns off cameras if anyone home and cameras are on.
@@ -71,9 +68,3 @@ class Cameras(hass.Hass):
             return True
         
         return False
-
-    """
-    If someone is actively home.
-    """
-    def someone_home(self) -> bool:
-        return self.utils.is_entity_home(self.allison) or self.utils.is_entity_home(self.owen)

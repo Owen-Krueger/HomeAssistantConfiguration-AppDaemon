@@ -11,12 +11,11 @@ cameras:
   class: Cameras
   dependencies: utils
   allison: person.allison
+  cameras_on: input_boolean.cat_cameras_on
   cameras:
     - switch.cat_camera_up_smart_plug
     - switch.cat_camera_down_smart_plug
   owen: person.owen
-  proximity_allison: proximity.allison
-  proximity_owen: proximity.owen
 climate:
   module: climate
   class: Climate
