@@ -64,7 +64,7 @@ class Utils(hass.Hass):
     """
     def set_state_conditionally(self, entity_to_test: str, expected_state: str, entity_to_set: str, state_to_set: str):
         current_state = self.get_state(entity_to_test)
-        self.log("Setting state conditionally. Current state: {} Expected State: {} New State: {}", current_state, expected_state, state_to_set)
+        self.log("Setting state conditionally for {}. Current state: {} Expected State: {} New State: {}", entity_to_test, current_state, expected_state, state_to_set)
 
         if current_state == expected_state and current_state != state_to_set:
             self.set_state(entity_to_set, state=state_to_set)

@@ -60,4 +60,4 @@ class Internet(hass.Hass):
         entity = kwargs["entity"]
 
         self.turn_on(entity)
-        self.notify("Restarted {} due to internet outage.".format(entity))
+        self.notify_owen("Restarted {} due to internet outage.".format(entity))
