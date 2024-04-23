@@ -201,7 +201,7 @@ class Climate(hass.Hass):
             gone_offset = self.get_input_number_from_state(self.entities.gone_offset)
             return day_temperature + self.get_offset(gone_offset)
 
-        temperature = day_temperature if self.is_day() else day_temperature + self.get_offset(night_offset)
+        temperature = day_temperature if self.is_day() else day_temperature - night_offset
         if state == ThermostatState.Away:
             away_offset = self.get_input_number_from_state(self.entities.away_offset)
             return temperature + self.get_offset(away_offset)
