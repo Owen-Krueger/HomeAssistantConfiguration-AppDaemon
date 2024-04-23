@@ -21,7 +21,7 @@ class ClimateEntities:
     day_time: str
     night_time: str
     day_temperature: str
-    night_temperature: str
+    night_offset: str
     away_minutes: str
     away_offset: str
     gone_offset: str
@@ -38,7 +38,7 @@ class ClimateEntities:
         self.day_time = hass.args["day_time"]
         self.night_time = hass.args["night_time"]
         self.day_temperature = hass.args["day_temperature"]
-        self.night_temperature = hass.args["night_temperature"]
+        self.night_offset = hass.args["night_offset"]
         self.away_minutes = hass.args["climate_away_minutes"]
         self.away_offset = hass.args["climate_away_offset"]
         self.gone_offset = hass.args["climate_gone_offset"]
@@ -195,13 +195,13 @@ class Climate(hass.Hass):
     """
     def get_new_temperature(self, state: ThermostatState) -> int:
         day_temperature = self.get_input_number_from_state(self.entities.day_temperature)
-        night_temperature = self.get_input_number_from_state(self.entities.night_temperature)
+        night_offset = self.get_input_number_from_state(self.entities.night_offset)
 
         if state == ThermostatState.Gone:
             gone_offset = self.get_input_number_from_state(self.entities.gone_offset)
             return day_temperature + self.get_offset(gone_offset)
 
-        temperature = day_temperature if self.is_day() else night_temperature
+        temperature = day_temperature if self.is_day() else day_temperature + self.get_offset(night_offset)
         if state == ThermostatState.Away:
             away_offset = self.get_input_number_from_state(self.entities.away_offset)
             return temperature + self.get_offset(away_offset)

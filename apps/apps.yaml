@@ -26,7 +26,7 @@ climate:
   climate_gone_offset: input_number.climate_gone_offset
   day_temperature: input_number.climate_day_temp
   day_time: input_datetime.climate_day_start
-  night_temperature: input_number.climate_night_temp
+  night_offset: input_number.climate_night_offset
   night_time: input_datetime.climate_night_start
   notify_user: input_boolean.climate_notify_user
   owen: person.owen

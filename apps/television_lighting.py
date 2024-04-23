@@ -83,8 +83,9 @@ class TelevisionLighting(hass.Hass):
     typically walks from upstairs to downstairs.
     """
     def turn_on_downstairs_lights_during_work(self, entity: str, attribute: str, old: str, new: str, kwargs):
-        # If Owen is home, it's a work day, and it's around lunch time.
-        if (not self.utils.is_entity_on(self.mode_guest) and
+        # If Owen is home, it's a work day, and it's around a time that Owen may be in the basement.
+        if (self.utils.is_entity_on(self.upstairs_tv_on) and
+            not self.utils.is_entity_on(self.mode_guest) and
             not self.utils.is_entity_on(self.downstairs_lights) and
             self.utils.is_entity_home(self.owen) and
             self.utils.is_entity_on(self.is_work_day) and
