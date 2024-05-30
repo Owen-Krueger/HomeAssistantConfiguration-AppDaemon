@@ -30,7 +30,7 @@ climate:
   night_time: input_datetime.climate_night_start
   notify_user: input_boolean.climate_notify_user
   owen: person.owen
-  thermostat: climate.kitchen_thermostat
+  thermostat: climate.main
   thermostat_state: input_select.thermostat_state
   vacation_mode: input_boolean.mode_vacation
   zone_home: zone.home
