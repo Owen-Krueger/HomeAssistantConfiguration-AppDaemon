@@ -63,7 +63,6 @@ class Climate(hass.Hass):
     night_time: time
     night_time_handler: str = None
     away_state_handler: str = None
-    deviation_listener_handler: str = None
 
     """
     Set up automation callbacks and state.
@@ -87,11 +86,7 @@ class Climate(hass.Hass):
         self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, old = "home", duration = away_duration_seconds)
         self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
         self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
-
-        # We only want this automation running if people are home. Otherwise, 
-        # the temperature probably will be deviating.
-        if self.anyone_home(person=True):
-            self.update_deviation_handler(True)
+        self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature", duration = 300)
 
     """
     On climate day time set, cancel previous timer and set up a new one for the new time.
@@ -142,7 +137,6 @@ class Climate(hass.Hass):
             new_state = ThermostatState.Away
 
         self.set_state(self.entities.thermostat_state, state = new_state.name)
-        self.update_deviation_handler(new_state == ThermostatState.Home)
 
     """
     On state updated, set temperature based on state.
@@ -156,6 +150,11 @@ class Climate(hass.Hass):
     from what's currently set at.
     """
     def on_current_temperature_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        # If nobody is home, there's no need to notify anyone, because the
+        # temperature is expected to be deviating.
+        if not self.anyone_home(person=True):
+            return
+
         previous_temperature = int(old)
         current_temperature = int(new)
         set_temperature = self.get_set_temperature()
@@ -260,14 +259,3 @@ class Climate(hass.Hass):
     """
     def get_set_temperature(self) -> int:
         return int(self.get_state(self.entities.thermostat, attribute = "temperature"))
-
-    """
-    Updates the deviation automation handler to be active/inactive dependending on the input.
-    """
-    def update_deviation_handler(self, active: bool) -> None:
-        is_handler_active: bool = self.deviation_listener_handler != None
-        if is_handler_active: # Cancel existing handler.
-            self.cancel_listen_state(self.deviation_listener_handler)
-        
-        if active: # Set up a new handler.
-            self.deviation_listener_handler = self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature", duration = 300) if active else None
