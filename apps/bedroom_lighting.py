@@ -15,7 +15,8 @@ class BedroomLighting(hass.Hass):
         self.bedroom_lights = self.args["bedroom_lights"]
 
         self.listen_event(self.on_bedside_button_click, "zha_event", device_id = self.bedroom_button_device_id, command = "single")
-        self.listen_state(self.on_bedroom_lights_turned_off, self.bedroom_lights, old = "on", new = "off")
+        self.listen_state(self.activate_night_lighting, self.bedroom_lights, old = "on", new = "off")
+        self.listen_state(self.activate_night_lighting, self.bedroom_lamps, old = "off", new = "on")
 
     """
     On bedroom bedside button clicked, toggle the bedroom lamps.
@@ -28,13 +29,14 @@ class BedroomLighting(hass.Hass):
             self.turn_off(bedroom_lights)
 
     """
-    If late, turn on bedroom lamps.
+    If late, turn on bedroom lamps and turn off bedroom lights.
     """
-    def on_bedroom_lights_turned_off(self, entity: str, attribute: str, old: str, new: str, kwargs):
+    def activate_night_lighting(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if not self.is_late():
             return
 
         self.turn_on(self.bedroom_lamps)
+        self.turn_off(self.bedroom_lights)
 
     """
     Returns if it's late at night.
