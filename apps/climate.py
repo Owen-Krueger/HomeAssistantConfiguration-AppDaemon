@@ -30,7 +30,8 @@ class ClimateEntities:
     thermostat_state: str
     zone_home: str
     zone_near_home: str
-    notify_user: str
+    notify_time: str
+    notify_location: str
 
     def __init__(self, hass: hass.Hass) -> None:
         self.allison = hass.args["allison"]
@@ -47,7 +48,8 @@ class ClimateEntities:
         self.thermostat_state = hass.args["thermostat_state"]
         self.zone_home = hass.args["zone_home"]
         self.zone_near_home = hass.args["zone_near_home"]
-        self.notify_user = hass.args["notify_user"]
+        self.notify_time = hass.args["notify_time"]
+        self.notify_location = hass.args["notify_location"]
 
 """
 Due to AppDaemon limitations, we can't listen for zone enter/exit events within this file. To get around
@@ -121,7 +123,7 @@ class Climate(hass.Hass):
     def on_schedule_time(self, args) -> None:
         state: ThermostatState = ThermostatState[self.get_state(self.entities.thermostat_state)]
         temperature: int = self.set_temperature(state)
-        self.notify_user(f"Climate: Temperature set to {temperature}")
+        self.notify_time_based(f"Climate: Temperature set to {temperature}")
 
     """
     If someone is home or away, set state based on if anybody else is home or not.
@@ -143,7 +145,7 @@ class Climate(hass.Hass):
     """
     def on_thermostat_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         temperature: int = self.set_temperature(ThermostatState[new])
-        self.notify_user(f"Climate: Temperature set to {temperature}")
+        self.notify_location(f"Climate: Temperature set to {temperature}")
 
     """
     On the current temperature of the thermostat changed, check if it's deviated too much
@@ -235,11 +237,18 @@ class Climate(hass.Hass):
         return bool(self.get_state(self.entities.thermostat) == "heat")
 
     """
-    Notify user if notify user boolean is set.
+    Notify user if notify user (time based) boolean is set.
     """
-    def notify_user(self, message: str) -> None:
-        if self.utils.is_entity_on(self.entities.notify_user):
+    def notify_time_based(self, message: str) -> None:
+        if self.utils.is_entity_on(self.entities.notify_time):
             self.utils.notify_owen(message)
+
+    """
+    Notify user if notify user (location based) boolean is set.
+    """
+    def notify_location_based(self, message: str) -> None:
+        if self.utils.is_entity_on(self.entities.notify_location):
+            self.notify(message, name = "owen")
 
     """
     Converts state string to an integer (minutes) and multiplies to get seconds

@@ -28,7 +28,8 @@ climate:
   day_time: input_datetime.climate_day_start
   night_offset: input_number.climate_night_offset
   night_time: input_datetime.climate_night_start
-  notify_user: input_boolean.climate_notify_user
+  notify_time: input_boolean.climate_notify_time_based
+  notify_location: input_boolean.climate_notify_location_based
   owen: person.owen
   thermostat: climate.main
   thermostat_state: input_select.thermostat_state

@@ -84,6 +84,13 @@ class Utils(hass.Hass):
         self.notify(message, name = "owen")
 
     """
+    Notifies Owen with the provided message, if someone is home.
+    """
+    def notify_owen_if_people_home(self, message: str) -> None:
+        if self.anyone_home(person=True):
+            self.notify(message, name = "owen")
+
+    """
     Adds input seconds to the input time by converting it to a datetime object,
     adding the seconds, and then converting back to a time object.
     """
