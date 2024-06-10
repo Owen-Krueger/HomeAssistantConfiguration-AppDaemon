@@ -2,6 +2,8 @@ import appdaemon.plugins.hass.hassapi as hass
 from datetime import datetime, time
 from enum import Enum, auto
 
+from person import Person
+
 """
 The various states the thermostat can be in.
 """
@@ -70,6 +72,7 @@ class Climate(hass.Hass):
     Set up automation callbacks and state.
     """
     def initialize(self) -> None:
+        self.notification_utils = self.get_app("notification_utils")
         self.utils = self.get_app("utils")
         self.entities = ClimateEntities(self)
         self.day_time = self.parse_time(self.get_state(self.entities.day_time))
@@ -241,14 +244,14 @@ class Climate(hass.Hass):
     """
     def notify_time_based(self, message: str) -> None:
         if self.utils.is_entity_on(self.entities.notify_time):
-            self.utils.notify_owen_if_people_home(message)
+            self.notification_utils.notify_users(message, Person.Owen, True)
 
     """
     Notify user if notify user (location based) boolean is set.
     """
     def notify_location_based(self, message: str) -> None:
         if self.utils.is_entity_on(self.entities.notify_location):
-            self.notify(message, name = "owen")
+            self.notification_utils.notify_users(message, Person.Owen)
 
     """
     Converts state string to an integer (minutes) and multiplies to get seconds

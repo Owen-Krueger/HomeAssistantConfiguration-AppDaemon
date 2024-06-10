@@ -19,7 +19,9 @@ cameras:
 climate:
   module: climate
   class: Climate
-  dependencies: utils
+  dependencies:
+    - notification_utils
+    - utils
   allison: person.allison
   climate_away_minutes: input_number.climate_away_minutes
   climate_away_offset: input_number.climate_away_offset
