@@ -241,7 +241,7 @@ class Climate(hass.Hass):
     """
     def notify_time_based(self, message: str) -> None:
         if self.utils.is_entity_on(self.entities.notify_time):
-            self.utils.notify_owen(message)
+            self.utils.notify_owen_if_people_home(message)
 
     """
     Notify user if notify user (location based) boolean is set.
