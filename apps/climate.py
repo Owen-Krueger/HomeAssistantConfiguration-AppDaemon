@@ -188,9 +188,11 @@ class Climate(hass.Hass):
             return
 
         if is_heat_mode and temperature_difference >= 2:
-            self.utils.notify_owen(f"House is too hot! (Current: {current_temperature} Set: {set_temperature})")
+            self.notification_utils.notify_users(
+                f"House is too hot! (Current: {current_temperature} Set: {set_temperature})", Person.Owen)
         elif not is_heat_mode and temperature_difference <= -2:
-            self.utils.notify_owen(f"House is too cold! (Current: {current_temperature} Set: {set_temperature})")
+            self.notification_utils.notify_users(
+                f"House is too cold! (Current: {current_temperature} Set: {set_temperature})", Person.Owen)
 
     """
     Sets the temperature of the thermostat based on the state.

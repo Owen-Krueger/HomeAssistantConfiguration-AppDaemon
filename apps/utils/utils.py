@@ -1,6 +1,5 @@
 import appdaemon.plugins.hass.hassapi as hass
 
-import asyncio
 from datetime import datetime, timedelta, time
 
 
@@ -89,21 +88,6 @@ class Utils(hass.Hass):
         """
 
         return int(float(state))
-
-    def notify_owen(self, message: str) -> None:
-        """
-        Notifies Owen with the provided message.
-        """
-
-        self.notify(message, name="owen")
-
-    def notify_owen_if_people_home(self, message: str) -> None:
-        """
-        Notifies Owen with the provided message, if someone is home.
-        """
-
-        if self.anyone_home(person=True):
-            self.notify(message, name="owen")
 
     def add_seconds(self, initial_time: time, seconds: int) -> time:
         """
