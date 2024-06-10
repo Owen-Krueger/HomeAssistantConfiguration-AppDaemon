@@ -145,7 +145,7 @@ class Climate(hass.Hass):
     """
     def on_thermostat_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         temperature: int = self.set_temperature(ThermostatState[new])
-        self.notify_location(f"Climate: Temperature set to {temperature}")
+        self.notify_location_based(f"Climate: Temperature set to {temperature}")
 
     """
     On the current temperature of the thermostat changed, check if it's deviated too much

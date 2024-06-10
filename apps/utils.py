@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, time
 Utility functions to be used by other scripts.
 """
 class Utils(hass.Hass):
-    
+
     """
     Returns if the entity state is currently "on".
     """
@@ -32,7 +32,7 @@ class Utils(hass.Hass):
         miles_away = int(state["state"])
         direction = state["attributes"]["dir_of_travel"]
 
-        return miles_away > 0 and miles_away < 5 and direction == "towards"
+        return 0 < miles_away < 5 and direction == "towards"
 
     """
     Returns if the entity has been triggered recently (within the
@@ -64,11 +64,12 @@ class Utils(hass.Hass):
     """
     def set_state_conditionally(self, entity_to_test: str, expected_state: str, entity_to_set: str, state_to_set: str):
         current_state = self.get_state(entity_to_test)
-        self.log("Setting state conditionally for {}. Current state: {} Expected State: {} New State: {}", entity_to_test, current_state, expected_state, state_to_set)
+        self.log("Setting state conditionally for {}. Current state: {} Expected State: {} New State: {}",
+                 entity_to_test, current_state, expected_state, state_to_set)
 
         if current_state == expected_state and current_state != state_to_set:
             self.set_state(entity_to_set, state=state_to_set)
-    
+
     """
     input_number is represented as a float string in HA. To convert these values
     to an integer, we must first cast the string to a float, and then cast it
@@ -81,14 +82,14 @@ class Utils(hass.Hass):
     Notifies Owen with the provided message.
     """
     def notify_owen(self, message: str) -> None:
-        self.notify(message, name = "owen")
+        self.notify(message, name="owen")
 
     """
     Notifies Owen with the provided message, if someone is home.
     """
     def notify_owen_if_people_home(self, message: str) -> None:
         if self.anyone_home(person=True):
-            self.notify(message, name = "owen")
+            self.notify(message, name="owen")
 
     """
     Adds input seconds to the input time by converting it to a datetime object,
