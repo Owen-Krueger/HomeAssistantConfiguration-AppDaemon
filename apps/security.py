@@ -1,7 +1,11 @@
 import appdaemon.plugins.hass.hassapi as hass
-from appdaemon.appdaemon import AppDaemon
+import importlib
 
-from person import Person
+try:
+    Person = importlib.import_module("utils.person").Person
+except ModuleNotFoundError:
+    Person = importlib.import_module("person").Person
+
 
 class Security(hass.Hass):
     """

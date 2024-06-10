@@ -3,7 +3,7 @@ from enum import Enum
 
 class Person(Enum):
     """
-    People that can be notified.
+    The various people that live in the house.
     """
 
     All = 'all'

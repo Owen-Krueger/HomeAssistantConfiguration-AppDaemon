@@ -1,15 +1,15 @@
 import appdaemon.plugins.hass.hassapi as hass
-from datetime import datetime, time
+from datetime import time
 from enum import Enum, auto
 
-from person import Person
+from apps.utils.person import Person
 
 """
 The various states the thermostat can be in.
 """
 class ThermostatState(Enum):
-    Home = auto(),
-    Away = auto(),
+    Home = auto()
+    Away = auto()
     Gone = auto()
 
 """
