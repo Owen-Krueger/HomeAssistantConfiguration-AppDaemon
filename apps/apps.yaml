@@ -60,6 +60,7 @@ internet:
 laundry:
   module: laundry
   class: Laundry
+  dependencies: notification_utils
   dryer: sensor.dryer_dryer_machine_state
   washer: sensor.washer_washer_machine_state
 off_lighting:
@@ -83,7 +84,7 @@ off_lighting:
 outside_lighting:
   module: outside_lighting
   class: OutsideLighting
-  depedencies: utils
+  dependencies: utils
   allison: person.allison
   front_porch_switch: switch.front_porch_lights
   holiday_lights: group.holiday_lights

@@ -33,7 +33,7 @@ class BedroomLighting(hass.Hass):
 
         await self.toggle(self.bedroom_lamps)
 
-        if self.is_late() and self.utils.is_entity_on(self.bedroom_lights):
+        if self.is_late() and await self.utils.is_entity_on(self.bedroom_lights):
             await self.turn_off(self.bedroom_lights)
 
     async def activate_night_lighting(self, entity: str, attribute: str, old: str, new: str, kwargs):

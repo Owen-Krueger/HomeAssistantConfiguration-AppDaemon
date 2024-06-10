@@ -1,21 +1,24 @@
-import hassapi as hass
+import appdaemon.plugins.hass.hassapi as hass
 
-"""
-For notifying when entities have become unavailable.
-"""
+
 class UnavailableEntities(hass.Hass):
-    
     """
-    Sets up the automation.
+    For notifying when entities have become unavailable.
     """
-    def initialize(self):
-        for entity in self.args["list"]:
-            self.listen_state(self.notify_owen, entity, new = "unavailable", duration = 30) # When unavailable for 30 seconds.
 
-    """
-    Notify Owen that the entity has become unavailable.
-    """
-    def notify_owen(self, entity: str, attribute: str, old: str, new: str, kwargs):
+    async def initialize(self):
+        """
+        Sets up the automation.
+        """
+
+        for entity in self.args["list"]:
+            await self.listen_state(self.notify_owen, entity, new="unavailable", duration=30)
+
+    async def notify_owen(self, entity: str, attribute: str, old: str, new: str, kwargs):
+        """
+        Notify Owen that the entity has become unavailable.
+        """
+
         message = "{} is unavailable.".format(entity)
         self.log("{} Notifying.".format(message))
-        self.notify(message, name="owen")
+        await self.notify(message, name="owen")
