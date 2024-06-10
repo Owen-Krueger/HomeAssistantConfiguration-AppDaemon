@@ -2,7 +2,7 @@ import appdaemon.plugins.hass.hassapi as hass
 from datetime import time
 from enum import Enum, auto
 
-from apps.utils.person import Person
+from person import Person
 
 
 class ThermostatState(Enum):

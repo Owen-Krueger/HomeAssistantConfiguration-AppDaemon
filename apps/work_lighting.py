@@ -1,7 +1,5 @@
 import appdaemon.plugins.hass.hassapi as hass
 
-from utils.utils import Utils
-
 
 class WorkLighting(hass.Hass):
     """
