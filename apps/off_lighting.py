@@ -1,14 +1,31 @@
-import hassapi as hass
+import appdaemon.plugins.hass.hassapi as hass
 
-"""
-Turning lights off automations.
-"""
+
 class OffLighting(hass.Hass):
-    
     """
-    Sets up the automation.
+    Turning lights off automations.
     """
+
+    all_off: str
+    all_off_dynamic: str
+    allison: str
+    downstairs_active: str
+    downstairs_lights: str
+    mode_guest: str
+    office_lights: str
+    owen: str
+    owen_computer_active: str
+    owen_phone_charger_type: str
+    night_lighting: str
+    upstairs_active: str
+    upstairs_living_area_off: str
+    vacation_mode: str
+
     def initialize(self):
+        """
+        Sets up the automation.
+        """
+
         self.utils = self.get_app("utils")
         self.all_off = self.args["all_off"]
         self.all_off_dynamic = self.args["all_off_dynamic"]
@@ -25,15 +42,20 @@ class OffLighting(hass.Hass):
         self.upstairs_living_area_off = self.args["upstairs_living_area_off"]
         self.vacation_mode = self.args["vacation_mode"]
 
-        self.listen_state(self.turn_off_lights, self.allison, new = "not_home", duration = 300) # When away for 5 minutes.
-        self.listen_state(self.turn_off_lights, self.owen, new = "not_home", duration = 300) # When away for 5 minutes.
-        self.listen_state(self.turn_off_lights_at_night, self.owen_phone_charger_type, new = "wireless", duration = 10) # When phone charging for 10 seconds.
-        self.listen_event(self.active_night_lighting, "CUSTOM_EVENT_NIGHT_LIGHTING") # When a night lighting event is triggered.
+        self.listen_state(self.turn_off_lights, self.allison, new="not_home",
+                                duration=300)  # When away for 5 minutes.
+        self.listen_state(self.turn_off_lights, self.owen, new="not_home",
+                                duration=300)  # When away for 5 minutes.
+        self.listen_state(self.turn_off_lights_at_night, self.owen_phone_charger_type, new="wireless",
+                                duration=10)  # When phone charging for 10 seconds.
+        self.listen_event(self.active_night_lighting,
+                                "CUSTOM_EVENT_NIGHT_LIGHTING")  # When a night lighting event is triggered.
 
     """
     Checks who is home. If everyone is gone, all lights are turned off.
     If only Allison is gone and Owen is at work, turn on office lighting.
     """
+
     def turn_off_lights(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Executing automation.")
         if self.utils.is_entity_on(self.mode_guest):
@@ -53,6 +75,7 @@ class OffLighting(hass.Hass):
     """
     Turns on night lighting scene.
     """
+
     def active_night_lighting(self, event_name: str, data, kwargs):
         self.log("Turning on night lighting.")
         self.turn_on(self.night_lighting)
@@ -61,20 +84,22 @@ class OffLighting(hass.Hass):
     """
     Turns off any lights that are on and don't have activity in that room.
     """
+
     def turn_off_lights_based_on_state(self):
         self.utils.set_state_conditionally(self.upstairs_active, "off",
-            self.upstairs_living_area_off, "on")
+                                                 self.upstairs_living_area_off, "on")
         self.utils.set_state_conditionally(self.downstairs_active, "off",
-            self.downstairs_lights, "off")
+                                                 self.downstairs_lights, "off")
         self.utils.set_state_conditionally(self.owen_computer_active, "off",
-            self.office_lights, "off")
+                                                 self.office_lights, "off")
 
     """
     At night, turn off all lights in the house once people are sleeping.
     """
+
     def turn_off_lights_at_night(self, entity: str, attribute: str, old: str, new: str, kwargs):
         if (not self.utils.is_entity_on(self.vacation_mode) and
-            self.utils.is_entity_home(self.owen) and
-            self.now_is_between("20:30:00", "03:00:00")):
+                self.utils.is_entity_home(self.owen) and
+                self.now_is_between("20:30:00", "03:00:00")):
             self.log("Turning off all lights due to phone charging at night.")
             self.turn_on(self.all_off)

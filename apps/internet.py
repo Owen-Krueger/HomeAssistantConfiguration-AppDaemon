@@ -1,14 +1,19 @@
-import hassapi as hass
+import appdaemon.plugins.hass.hassapi as hass
 
-"""
-Automation to restart the modem if we don't have internet.
-"""
+
 class Internet(hass.Hass):
+    """
+    Automation to restart the modem if we don't have internet.
+    """
 
-    """
-    Sets up the automation.
-    """
+    internet_up: str
+    internet_modem_smart_plug: str
+
     def initialize(self):
+        """
+        Sets up the automation.
+        """
+
         self.utils = self.get_app("utils")
         self.internet_up = self.args["internet_up"]
         self.internet_modem_smart_plug = self.args["internet_modem_smart_plug"]
@@ -18,7 +23,7 @@ class Internet(hass.Hass):
         # checks if we have internet access every minute, so this time
         # allows for a second check to happen and confirm that we have no
         # internet access.
-        self.listen_state(self.restart_modem, self.internet_up, new = "off", duration = 90)
+        self.listen_state(self.restart_modem, self.internet_up, new="off", duration=90)
 
     """
     Restarts modem smart plug. Then, sets a callback to check if the internet
@@ -45,7 +50,7 @@ class Internet(hass.Hass):
     run in 15 seconds to turn the entity back on.
     """
     def restart_entity(self, entity: str):
-        if (self.utils.recently_triggered(entity, 300)):
+        if self.utils.recently_triggered(entity, 300):
             self.log("{} already manually restarted. Not restarting.".format(entity))
             return
 

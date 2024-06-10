@@ -1,20 +1,25 @@
 import appdaemon.plugins.hass.hassapi as hass
-from datetime import datetime, time
+from datetime import time
 from enum import Enum, auto
 
-"""
-The various states the thermostat can be in.
-"""
+from person import Person
+
+
 class ThermostatState(Enum):
-    Home = auto(),
-    Away = auto(),
+    """
+    The various states the thermostat can be in.
+    """
+
+    Home = auto()
+    Away = auto()
     Gone = auto()
 
-"""
-Stores the identifiers for HASS entities.
-Example: day_time: input_datetime.climate_day_start
-"""
+
 class ClimateEntities:
+    """
+    Stores the identifiers for HASS entities.
+    Example: day_time: input_datetime.climate_day_start
+    """
 
     allison: str
     owen: str
@@ -33,31 +38,32 @@ class ClimateEntities:
     notify_time: str
     notify_location: str
 
-    def __init__(self, hass: hass.Hass) -> None:
-        self.allison = hass.args["allison"]
-        self.owen = hass.args["owen"]
-        self.day_time = hass.args["day_time"]
-        self.night_time = hass.args["night_time"]
-        self.day_temperature = hass.args["day_temperature"]
-        self.night_offset = hass.args["night_offset"]
-        self.away_minutes = hass.args["climate_away_minutes"]
-        self.away_offset = hass.args["climate_away_offset"]
-        self.gone_offset = hass.args["climate_gone_offset"]
-        self.vacation_mode = hass.args["vacation_mode"]
-        self.thermostat = hass.args["thermostat"]
-        self.thermostat_state = hass.args["thermostat_state"]
-        self.zone_home = hass.args["zone_home"]
-        self.zone_near_home = hass.args["zone_near_home"]
-        self.notify_time = hass.args["notify_time"]
-        self.notify_location = hass.args["notify_location"]
+    def __init__(self, hass_instance: hass.Hass) -> None:
+        self.allison = hass_instance.args["allison"]
+        self.owen = hass_instance.args["owen"]
+        self.day_time = hass_instance.args["day_time"]
+        self.night_time = hass_instance.args["night_time"]
+        self.day_temperature = hass_instance.args["day_temperature"]
+        self.night_offset = hass_instance.args["night_offset"]
+        self.away_minutes = hass_instance.args["climate_away_minutes"]
+        self.away_offset = hass_instance.args["climate_away_offset"]
+        self.gone_offset = hass_instance.args["climate_gone_offset"]
+        self.vacation_mode = hass_instance.args["vacation_mode"]
+        self.thermostat = hass_instance.args["thermostat"]
+        self.thermostat_state = hass_instance.args["thermostat_state"]
+        self.zone_home = hass_instance.args["zone_home"]
+        self.zone_near_home = hass_instance.args["zone_near_home"]
+        self.notify_time = hass_instance.args["notify_time"]
+        self.notify_location = hass_instance.args["notify_location"]
 
-"""
-Due to AppDaemon limitations, we can't listen for zone enter/exit events within this file. To get around
-this, we use helper functions in HomeAssistant's built-in Automations area. These automations trigger on
-zone events and set the thermostat state, which we are listening on state changes to trigger functions.
-HomeAssistant climate helper automations: https://github.com/Owen-Krueger/HomeAssistantConfiguration/blob/main/automation/climate.yaml
-"""
+
 class Climate(hass.Hass):
+    """
+    Due to AppDaemon limitations, we can't listen for zone enter/exit events within this file. To get around
+    this, we use helper functions in HomeAssistant's built-in Automations area. These automations trigger on
+    zone events and set the thermostat state, which we are listening on state changes to trigger functions.
+    HomeAssistant climate helper automations: https://github.com/Owen-Krueger/HomeAssistantConfiguration/blob/main/automation/climate.yaml
+    """
 
     entities: ClimateEntities
     day_time: time
@@ -66,69 +72,80 @@ class Climate(hass.Hass):
     night_time_handler: str = None
     away_state_handler: str = None
 
-    """
-    Set up automation callbacks and state.
-    """
     def initialize(self) -> None:
+        """
+        Set up automation callbacks and state.
+        """
+
+        self.notification_utils = self.get_app("notification_utils")
         self.utils = self.get_app("utils")
         self.entities = ClimateEntities(self)
         self.day_time = self.parse_time(self.get_state(self.entities.day_time))
         self.night_time = self.parse_time(self.get_state(self.entities.night_time))
-        ENTITY_UPDATE_DURATION: int = 15
+        entity_update_duration: int = 15
         away_duration_seconds: int = self.get_away_duration_seconds(self.get_state(self.entities.away_minutes))
         # Property updates
-        self.listen_state(self.on_day_time_updated, self.entities.day_time, duration = ENTITY_UPDATE_DURATION)
-        self.listen_state(self.on_night_time_updated, self.entities.night_time, duration = ENTITY_UPDATE_DURATION)
-        self.listen_state(self.on_away_minutes_updated, self.entities.away_minutes, duration = ENTITY_UPDATE_DURATION)
+        self.listen_state(self.on_day_time_updated, self.entities.day_time, duration=entity_update_duration)
+        self.listen_state(self.on_night_time_updated, self.entities.night_time, duration=entity_update_duration)
+        self.listen_state(self.on_away_minutes_updated, self.entities.away_minutes,
+                                duration=entity_update_duration)
 
         # Temperature update events
         self.listen_state(self.on_thermostat_state_updated, self.entities.thermostat_state)
-        self.listen_state(self.on_person_state_updated, self.entities.allison, new = "home")
-        self.listen_state(self.on_person_state_updated, self.entities.owen, new = "home")
-        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, old = "home", duration = away_duration_seconds)
+        self.listen_state(self.on_person_state_updated, self.entities.allison, new="home")
+        self.listen_state(self.on_person_state_updated, self.entities.owen, new="home")
+        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen,
+                                                          old="home", duration=away_duration_seconds)
         self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
         self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
-        self.listen_state(self.on_current_temperature_updated, self.entities.thermostat, attribute = "current_temperature", duration = 300)
+        self.listen_state(self.on_current_temperature_updated, self.entities.thermostat,
+                                attribute="current_temperature", duration=300)
 
-    """
-    On climate day time set, cancel previous timer and set up a new one for the new time.
-    """
     def on_day_time_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        """
+        On climate day time set, cancel previous timer and set up a new one for the new time.
+        """
+
         self.cancel_timer(self.day_time_handler)
         self.day_time = self.parse_time(new)
         self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
         self.log(f"day_time updated from {old} to {new}.")
 
-    """
-    On climate night time set, cancel previous timer and set up a new one for the new time.
-    """
     def on_night_time_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        """
+        On climate nighttime set, cancel previous timer and set up a new one for the new time.
+        """
+
         self.cancel_timer(self.night_time_handler)
         self.night_time = self.parse_time(new)
         self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
         self.log(f"night_time updated from {old} to {new}.")
 
-    """
-    On away minutes updated, cancel away state listeners and set up new ones with new time.
-    """
     def on_away_minutes_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        """
+        On away minutes updated, cancel away state listeners and set up new ones with new time.
+        """
+
         self.cancel_listen_state(self.away_state_handler)
         away_duration_seconds = self.get_away_duration_seconds(new)
-        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, new = "away", duration = away_duration_seconds)
+        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, new="away",
+                                                          duration=away_duration_seconds)
         self.log(f"away_minutes updated from {old} to {new}.")
 
-    """
-    On climate day time or night time, update temperature.
-    """
     def on_schedule_time(self, args) -> None:
+        """
+        On climate day time or nighttime, update temperature.
+        """
+
         state: ThermostatState = ThermostatState[self.get_state(self.entities.thermostat_state)]
         temperature: int = self.set_temperature(state)
         self.notify_time_based(f"Climate: Temperature set to {temperature}")
 
-    """
-    If someone is home or away, set state based on if anybody else is home or not.
-    """
     def on_person_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        """
+        If someone is home or away, set state based on if anybody else is home or not.
+        """
+
         existing_state = ThermostatState[self.get_state(self.entities.thermostat_state)]
         new_state = ThermostatState.Home
         anyone_home = self.anyone_home(person=True)
@@ -138,14 +155,15 @@ class Climate(hass.Hass):
         elif not anyone_home:
             new_state = ThermostatState.Away
 
-        self.set_state(self.entities.thermostat_state, state = new_state.name)
+        self.set_state(self.entities.thermostat_state, state=new_state.name)
 
-    """
-    On state updated, set temperature based on state.
-    """
     def on_thermostat_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        """
+        On state updated, set temperature based on state.
+        """
+
         temperature: int = self.set_temperature(ThermostatState[new])
-        self.notify_location(f"Climate: Temperature set to {temperature}")
+        self.notify_location_based(f"Climate: Temperature set to {temperature}")
 
     """
     On the current temperature of the thermostat changed, check if it's deviated too much
@@ -170,9 +188,11 @@ class Climate(hass.Hass):
             return
 
         if is_heat_mode and temperature_difference >= 2:
-            self.utils.notify_owen(f"House is too hot! (Current: {current_temperature} Set: {set_temperature})")
+            self.notification_utils.notify_users(
+                f"House is too hot! (Current: {current_temperature} Set: {set_temperature})", Person.Owen)
         elif not is_heat_mode and temperature_difference <= -2:
-            self.utils.notify_owen(f"House is too cold! (Current: {current_temperature} Set: {set_temperature})")
+            self.notification_utils.notify_users(
+                f"House is too cold! (Current: {current_temperature} Set: {set_temperature})", Person.Owen)
 
     """
     Sets the temperature of the thermostat based on the state.
@@ -241,14 +261,14 @@ class Climate(hass.Hass):
     """
     def notify_time_based(self, message: str) -> None:
         if self.utils.is_entity_on(self.entities.notify_time):
-            self.utils.notify_owen_if_people_home(message)
+            self.notification_utils.notify_users(message, Person.Owen, True)
 
     """
     Notify user if notify user (location based) boolean is set.
     """
     def notify_location_based(self, message: str) -> None:
         if self.utils.is_entity_on(self.entities.notify_location):
-            self.notify(message, name = "owen")
+            self.notification_utils.notify_users(message, Person.Owen)
 
     """
     Converts state string to an integer (minutes) and multiplies to get seconds

@@ -19,7 +19,9 @@ cameras:
 climate:
   module: climate
   class: Climate
-  dependencies: utils
+  dependencies:
+    - notification_utils
+    - utils
   allison: person.allison
   climate_away_minutes: input_number.climate_away_minutes
   climate_away_offset: input_number.climate_away_offset
@@ -58,6 +60,7 @@ internet:
 laundry:
   module: laundry
   class: Laundry
+  dependencies: notification_utils
   dryer: sensor.dryer_dryer_machine_state
   washer: sensor.washer_washer_machine_state
 off_lighting:
@@ -81,7 +84,7 @@ off_lighting:
 outside_lighting:
   module: outside_lighting
   class: OutsideLighting
-  depedencies: utils
+  dependencies: utils
   allison: person.allison
   front_porch_switch: switch.front_porch_lights
   holiday_lights: group.holiday_lights
@@ -133,6 +136,13 @@ ping_entities:
       ping: button.stairway_lights_ping
     - entity: switch.utility_room_lights
       ping: button.utility_room_lights_ping
+security:
+  module: security
+  class: Security
+  dependencies: notification_utils
+  allison: person.allison
+  front_door_lock: lock.front_door_lock
+  owen: person.owen
 television_lighting:
   module: television_lighting
   class: TelevisionLighting
@@ -184,6 +194,12 @@ work_lighting:
   owen: person.owen
 
 # Shared
+notification_utils:
+  module: notification_utils
+  class: NotificationUtils
+person:
+  module: person
+  global: true
 utils:
   module: utils
   class: Utils

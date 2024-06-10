@@ -1,18 +1,21 @@
-import hassapi as hass
+import appdaemon.plugins.hass.hassapi as hass
 
-"""
-Automation to toggle lights on and off due to events received.
-"""
+
 class ToggleableLighting(hass.Hass):
+    """
+    Automation to toggle lights on and off due to events received.
+    """
 
-    """
-    Sets up the automations.
-    """
     def initialize(self):
+        """
+        Sets up the automations.
+        """
+
         self.utils = self.get_app("utils")
 
         for event in self.args["dictionary"]:
-            self.listen_event(self.toggle_light, "zha_event", device_id = event["event_device_id"], command = event["command"], lights = event["lights"])
+            self.listen_event(self.toggle_light, "zha_event", device_id=event["event_device_id"],
+                                    command=event["command"], lights=event["lights"])
 
     """
     Turns light on if currently off and turns light off if currently on.
@@ -26,7 +29,7 @@ class ToggleableLighting(hass.Hass):
             self.log("{} recently triggered. Not toggling.".format(lights))
             return
 
-        # This is a work around where sometimes lights get out of sync.
+        # This is a work-around where sometimes lights get out of sync.
         current_state = self.utils.is_entity_on(first_light)
         self.log("Toggle triggered for {}. Turning light {}.".format(lights, "off" if current_state else "on"))
 

@@ -1,21 +1,29 @@
 import appdaemon.plugins.hass.hassapi as hass
 
-"""
-Laundry automations.
-"""
-class Laundry(hass.Hass):
+from person import Person
 
+
+class Laundry(hass.Hass):
     """
-    Sets up the automation.
+    Laundry automations.
     """
+
+    washer: str
+    dryer: str
+
     def initialize(self):
+        """
+        Sets up the automation.
+        """
+
+        self.notification_utils = self.get_app("notification_utils")
         self.washer = self.args["washer"]
         self.dryer = self.args["dryer"]
 
-        self.listen_state(self.notify_users, self.washer, old = "run", new = "stop")
+        self.listen_state(self.notify_users, self.washer, old="run", new="stop")
         # Usually, state becomes "finished", but occasionally
         # goes from "cooling" to "none".
-        self.listen_state(self.notify_users, self.dryer, old = "run", new = "stop")
+        self.listen_state(self.notify_users, self.dryer, old="run", new="stop")
 
     """
     Attempts to notify users about load being complete.
@@ -25,5 +33,4 @@ class Laundry(hass.Hass):
         device = "washer" if entity == self.washer else "dryer"
         message = "The {} has completed!".format(device)
 
-        self.notify(message, name="owen")
-        self.notify(message, name="allison")
+        self.notification_utils.notify_users(message, Person.All)
