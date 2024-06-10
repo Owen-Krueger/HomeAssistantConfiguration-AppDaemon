@@ -1,8 +1,12 @@
 import appdaemon.plugins.hass.hassapi as hass
 from datetime import time
 from enum import Enum, auto
+import importlib
 
-from person import Person
+try:
+    Person = importlib.import_module("utils.person").Person
+except ModuleNotFoundError:
+    Person = importlib.import_module("person").Person
 
 
 class ThermostatState(Enum):
@@ -88,18 +92,18 @@ class Climate(hass.Hass):
         self.listen_state(self.on_day_time_updated, self.entities.day_time, duration=entity_update_duration)
         self.listen_state(self.on_night_time_updated, self.entities.night_time, duration=entity_update_duration)
         self.listen_state(self.on_away_minutes_updated, self.entities.away_minutes,
-                                duration=entity_update_duration)
+                          duration=entity_update_duration)
 
         # Temperature update events
         self.listen_state(self.on_thermostat_state_updated, self.entities.thermostat_state)
         self.listen_state(self.on_person_state_updated, self.entities.allison, new="home")
         self.listen_state(self.on_person_state_updated, self.entities.owen, new="home")
         self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen,
-                                                          old="home", duration=away_duration_seconds)
+                                                    old="home", duration=away_duration_seconds)
         self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
         self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
         self.listen_state(self.on_current_temperature_updated, self.entities.thermostat,
-                                attribute="current_temperature", duration=300)
+                          attribute="current_temperature", duration=300)
 
     def on_day_time_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
@@ -129,7 +133,7 @@ class Climate(hass.Hass):
         self.cancel_listen_state(self.away_state_handler)
         away_duration_seconds = self.get_away_duration_seconds(new)
         self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, new="away",
-                                                          duration=away_duration_seconds)
+                                                    duration=away_duration_seconds)
         self.log(f"away_minutes updated from {old} to {new}.")
 
     def on_schedule_time(self, args) -> None:
@@ -169,6 +173,7 @@ class Climate(hass.Hass):
     On the current temperature of the thermostat changed, check if it's deviated too much
     from what's currently set at.
     """
+
     def on_current_temperature_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         # If nobody is home, there's no need to notify anyone, because the
         # temperature is expected to be deviating.
@@ -180,7 +185,7 @@ class Climate(hass.Hass):
         set_temperature = self.get_set_temperature()
         is_heat_mode = self.is_heat_mode()
         temperature_difference = current_temperature - set_temperature
-        
+
         # Don't notify if the temperature is not going in a concerning direction.
         if is_heat_mode and current_temperature <= previous_temperature:
             return
@@ -197,6 +202,7 @@ class Climate(hass.Hass):
     """
     Sets the temperature of the thermostat based on the state.
     """
+
     def set_temperature(self, state: ThermostatState) -> int:
         current_temperature: int = self.get_set_temperature()
         new_temperature = self.get_new_temperature(state)
@@ -208,12 +214,13 @@ class Climate(hass.Hass):
                 entity_id=self.entities.thermostat,
                 temperature=new_temperature,
             )
-        
+
         return new_temperature
 
     """
     Updates the correct temperature to set based on the current state.
     """
+
     def get_new_temperature(self, state: ThermostatState) -> int:
         day_temperature = self.get_input_number_from_state(self.entities.day_temperature)
         night_offset = self.get_input_number_from_state(self.entities.night_offset)
@@ -233,6 +240,7 @@ class Climate(hass.Hass):
     Day is considered the time between the start time of the day temperature
     and the start time of the night temperature.
     """
+
     def is_day(self) -> bool:
         # Subtract 5 seconds from the user set day time to get rid of an edge case where
         # the automation running fast could result in `now_is_between` returning false.
@@ -247,18 +255,21 @@ class Climate(hass.Hass):
     Heat: -5
     Cool: 5
     """
+
     def get_offset(self, offset: int) -> int:
         return offset * -1 if self.is_heat_mode() else offset
 
     """
     Whether on not the thermostat is currently heating or cooling.
     """
+
     def is_heat_mode(self) -> bool:
         return bool(self.get_state(self.entities.thermostat) == "heat")
 
     """
     Notify user if notify user (time based) boolean is set.
     """
+
     def notify_time_based(self, message: str) -> None:
         if self.utils.is_entity_on(self.entities.notify_time):
             self.notification_utils.notify_users(message, Person.Owen, True)
@@ -266,6 +277,7 @@ class Climate(hass.Hass):
     """
     Notify user if notify user (location based) boolean is set.
     """
+
     def notify_location_based(self, message: str) -> None:
         if self.utils.is_entity_on(self.entities.notify_location):
             self.notification_utils.notify_users(message, Person.Owen)
@@ -274,17 +286,20 @@ class Climate(hass.Hass):
     Converts state string to an integer (minutes) and multiplies to get seconds
     needed for AppDaemon durations.
     """
+
     def get_away_duration_seconds(self, state: str) -> int:
         return self.utils.get_input_number_integer(state) * 60
 
     """
     Gets the integer representation of the state of the input entity.
     """
+
     def get_input_number_from_state(self, entity_id: str) -> int:
         return self.utils.get_input_number_integer(self.get_state(entity_id))
 
     """
     Gets the currently set temperature for the thermostat.
     """
+
     def get_set_temperature(self) -> int:
-        return int(self.get_state(self.entities.thermostat, attribute = "temperature"))
+        return int(self.get_state(self.entities.thermostat, attribute="temperature"))

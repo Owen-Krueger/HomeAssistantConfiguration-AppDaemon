@@ -43,13 +43,13 @@ class OffLighting(hass.Hass):
         self.vacation_mode = self.args["vacation_mode"]
 
         self.listen_state(self.turn_off_lights, self.allison, new="not_home",
-                                duration=300)  # When away for 5 minutes.
+                          duration=300)  # When away for 5 minutes.
         self.listen_state(self.turn_off_lights, self.owen, new="not_home",
-                                duration=300)  # When away for 5 minutes.
+                          duration=300)  # When away for 5 minutes.
         self.listen_state(self.turn_off_lights_at_night, self.owen_phone_charger_type, new="wireless",
-                                duration=10)  # When phone charging for 10 seconds.
+                          duration=10)  # When phone charging for 10 seconds.
         self.listen_event(self.active_night_lighting,
-                                "CUSTOM_EVENT_NIGHT_LIGHTING")  # When a night lighting event is triggered.
+                          "CUSTOM_EVENT_NIGHT_LIGHTING")  # When a night lighting event is triggered.
 
     """
     Checks who is home. If everyone is gone, all lights are turned off.
@@ -87,11 +87,11 @@ class OffLighting(hass.Hass):
 
     def turn_off_lights_based_on_state(self):
         self.utils.set_state_conditionally(self.upstairs_active, "off",
-                                                 self.upstairs_living_area_off, "on")
+                                           self.upstairs_living_area_off, "on")
         self.utils.set_state_conditionally(self.downstairs_active, "off",
-                                                 self.downstairs_lights, "off")
+                                           self.downstairs_lights, "off")
         self.utils.set_state_conditionally(self.owen_computer_active, "off",
-                                                 self.office_lights, "off")
+                                           self.office_lights, "off")
 
     """
     At night, turn off all lights in the house once people are sleeping.

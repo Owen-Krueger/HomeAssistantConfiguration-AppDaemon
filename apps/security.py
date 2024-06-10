@@ -53,7 +53,7 @@ class Security(hass.Hass):
         """
         if not self.is_front_door_locked():
             self.log("Locking front door.")
-            self.call_service("lock/lock", entity_id = self.front_door_lock)
+            self.call_service("lock/lock", entity_id=self.front_door_lock)
             self.run_in(self.verify_front_door_locked, 10)
 
     def verify_front_door_locked(self, args) -> None:
