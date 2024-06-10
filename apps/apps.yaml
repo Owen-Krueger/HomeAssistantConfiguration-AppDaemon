@@ -194,6 +194,9 @@ work_lighting:
 notification_utils:
   module: notification_utils
   class: NotificationUtils
+person:
+  module: person
+  global: true
 utils:
   module: utils
   class: Utils

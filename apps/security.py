@@ -1,7 +1,7 @@
 import appdaemon.plugins.hass.hassapi as hass
+from appdaemon.appdaemon import AppDaemon
 
-from apps.notification_utils import NotificationUtils, Person
-
+from person import Person
 
 class Security(hass.Hass):
     """
@@ -11,7 +11,6 @@ class Security(hass.Hass):
     allison: str
     front_door_lock: str
     owen: str
-    notification_utils: NotificationUtils
 
     def initialize(self) -> None:
         """

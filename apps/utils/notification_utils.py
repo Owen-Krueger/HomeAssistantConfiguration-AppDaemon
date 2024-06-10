@@ -1,16 +1,5 @@
-from enum import Enum
-
 import appdaemon.plugins.hass.hassapi as hass
-
-
-class Person(Enum):
-    """
-    People that can be notified.
-    """
-
-    All = 'all',
-    Owen = 'owen',
-    Allison = 'allison',
+from person import Person
 
 
 class NotificationUtils(hass.Hass):
