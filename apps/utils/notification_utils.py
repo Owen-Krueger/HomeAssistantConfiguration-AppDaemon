@@ -7,7 +7,7 @@ class NotificationUtils(hass.Hass):
     Utilities used to notify users.
     """
 
-    async def notify_users(self, message: str, person: Person, if_people_home: bool = False):
+    def notify_users(self, message: str, person: Person, if_people_home: bool = False):
         """
         Notifies the provided user or users with the provided message.
         @param message: The message to send.
@@ -18,7 +18,7 @@ class NotificationUtils(hass.Hass):
         send_notification = not if_people_home or self.anyone_home(person=True)
 
         if send_notification and person == Person.All:
-            await self.notify(message, name=Person.Owen.value)
-            await self.notify(message, name=Person.Allison.value)
+            self.notify(message, name=Person.Owen.value)
+            self.notify(message, name=Person.Allison.value)
         elif send_notification:
-            await self.notify(message, name=person.value)
+            self.notify(message, name=person.value)

@@ -1,5 +1,7 @@
 import appdaemon.plugins.hass.hassapi as hass
 
+from utils.utils import Utils
+
 
 class WorkLighting(hass.Hass):
     """
@@ -12,7 +14,7 @@ class WorkLighting(hass.Hass):
     office_lights: str
     owen: str
 
-    async def initialize(self):
+    def initialize(self):
         """
         Sets up the automation.
         """
@@ -24,20 +26,23 @@ class WorkLighting(hass.Hass):
         self.office_lights = self.args["office_lights"]
         self.owen = self.args["owen"]
 
-        await self.listen_state(self.on_office_light_off, self.office_lights, new="off", duration=30)
+        self.listen_state(self.on_office_light_off, self.office_lights, new="off", duration=30)
 
     """
     Automations office lights turned off. Turns on dining room lights
     if lunchtime and they're currently off.
     """
 
-    async def on_office_light_off(self, entity: str, attribute: str, old: str, new: str, kwargs):
+    def on_office_light_off(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Executing automations due to office lights being turned off.")
 
+        self.create_task(self.utils.is_entity_on(self.dining_room_lights))
+        self.utils.is_entity_on(self.dining_room_lights)
+
         # If Owen is home, it's a work day, and it's around lunchtime.
-        if (not await self.utils.is_entity_on(self.mode_guest) and
-                not await self.utils.is_entity_on(self.dining_room_lights) and
-                await self.utils.is_entity_home(self.owen) and
-                await self.utils.is_entity_on(self.is_work_day) and
+        if (not self.utils.is_entity_on(self.mode_guest) and
+                not self.utils.is_entity_on(self.dining_room_lights) and
+                self.utils.is_entity_home(self.owen) and
+                self.utils.is_entity_on(self.is_work_day) and
                 self.now_is_between("11:00:00", "13:30:00")):
-            await self.turn_on(self.dining_room_lights)
+            self.turn_on(self.dining_room_lights)

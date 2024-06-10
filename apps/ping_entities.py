@@ -6,7 +6,7 @@ class PingEntities(hass.Hass):
     Automations to ping entities if they become unavailable.
     """
 
-    async def initialize(self):
+    def initialize(self):
         """
         Sets up the automation.
         """
@@ -14,18 +14,18 @@ class PingEntities(hass.Hass):
         self.utils = self.get_app("utils")
 
         for entity in self.args["dictionary"]:
-            await self.listen_state(self.ping_entity, entity["entity"], new="unavailable", ping=entity["ping"],
+            self.listen_state(self.ping_entity, entity["entity"], new="unavailable", ping=entity["ping"],
                                     sync_entity=entity.get("sync_entity", None), count=1)
 
-    async def ping_entity(self, entity: str, attribute: str, old: str, new: str, **kwargs):
+    def ping_entity(self, entity: str, attribute: str, old: str, new: str, **kwargs):
         """
         Wraps `ping_entity_inner`. This is called by `listen_state`.
         """
 
         kwargs["entity"] = entity
-        await self.ping_entity_inner(**kwargs)
+        self.ping_entity_inner(**kwargs)
     
-    async def ping_entity_inner(self, **kwargs):
+    def ping_entity_inner(self, **kwargs):
         """
         Pings the entity and waits 5 seconds to see if it comes online.
         """
@@ -34,10 +34,10 @@ class PingEntities(hass.Hass):
         ping = kwargs["ping"]
         self.log("Pinging {} because it's unavailable".format(entity))
 
-        await self.call_service("button/press", entity_id=ping)
-        await self.run_in(self.ensure_entity_on, 5, **kwargs)
+        self.call_service("button/press", entity_id=ping)
+        self.run_in(self.ensure_entity_on, 5, **kwargs)
 
-    async def ensure_entity_on(self, **kwargs):
+    def ensure_entity_on(self, **kwargs):
         """
         Checks if the entity has stopped being unavailable. If `sync_entity` provided,
         sync the state of this entity to be the state of `sync_entity`. This is useful
@@ -53,12 +53,12 @@ class PingEntities(hass.Hass):
             self.log("{} pinged but still unavailable. (Count: {})".format(entity, count))
 
             if count >= 3:
-                await self.notify("{} pinged multiple times but still unavailable.".format(entity), name = "owen")
+                self.notify("{} pinged multiple times but still unavailable.".format(entity), name = "owen")
                 return
             
             kwargs["count"] = count + 1
-            await self.run_in(self.ping_entity_inner, 300, **kwargs) # Wait 5 minutes.
+            self.run_in(self.ping_entity_inner, 300, **kwargs) # Wait 5 minutes.
 
         # If available, check if there's a second entity to sync state with.
         if sync_entity is not None:
-            await self.utils.sync_entities(sync_entity, entity)
+            self.utils.sync_entities(sync_entity, entity)

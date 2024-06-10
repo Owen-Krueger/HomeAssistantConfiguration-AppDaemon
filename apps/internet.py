@@ -9,7 +9,7 @@ class Internet(hass.Hass):
     internet_up: str
     internet_modem_smart_plug: str
 
-    async def initialize(self):
+    def initialize(self):
         """
         Sets up the automation.
         """
@@ -23,14 +23,14 @@ class Internet(hass.Hass):
         # checks if we have internet access every minute, so this time
         # allows for a second check to happen and confirm that we have no
         # internet access.
-        await self.listen_state(self.restart_modem, self.internet_up, new="off", duration=90)
+        self.listen_state(self.restart_modem, self.internet_up, new="off", duration=90)
 
     """
     Restarts modem smart plug. Then, sets a callback to check if the internet
     is up in 5 minutes or restarts router.
     """
-    async def restart_modem(self, entity: str, attribute: str, old: str, new: str, kwargs):
-        await self.restart_entity(self.internet_modem_smart_plug)
+    def restart_modem(self, entity: str, attribute: str, old: str, new: str, kwargs):
+        self.restart_entity(self.internet_modem_smart_plug)
 
         # Router smart plug needs to be running a non-wifi based protocol
         # (like Zigbee) or we won't be able to turn it back on when the router
@@ -49,20 +49,20 @@ class Internet(hass.Hass):
     Restarts input entity by turning it off and then scheduling a callback to
     run in 15 seconds to turn the entity back on.
     """
-    async def restart_entity(self, entity: str):
-        if await self.utils.recently_triggered(entity, 300):
+    def restart_entity(self, entity: str):
+        if self.utils.recently_triggered(entity, 300):
             self.log("{} already manually restarted. Not restarting.".format(entity))
             return
 
         self.log("Restarting {}".format(entity))
-        await self.turn_off(entity)
-        await self.run_in(self.turn_on_entity, 15, entity = entity)
+        self.turn_off(entity)
+        self.run_in(self.turn_on_entity, 15, entity = entity)
 
     """
     Turns input entity back on.
     """
-    async def turn_on_entity(self, kwargs):
+    def turn_on_entity(self, kwargs):
         entity = kwargs["entity"]
 
-        await self.turn_on(entity)
+        self.turn_on(entity)
         self.notify_owen("Restarted {} due to internet outage.".format(entity))

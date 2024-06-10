@@ -9,7 +9,7 @@ class OwenPhoneWifi(hass.Hass):
     owen: str
     phone_network: str
 
-    async def initialize(self):
+    def initialize(self):
         """
         Sets up the automation.
         """
@@ -18,14 +18,14 @@ class OwenPhoneWifi(hass.Hass):
         self.owen = self.args["owen"]
         self.phone_network = self.args["phone_network"]
 
-        await self.listen_state(self.notify_owen, self.owen, new="home", duration=1800)  # When home for 30 minutes
-        await self.listen_state(self.notify_owen, self.phone_network, new="cellular",
+        self.listen_state(self.notify_owen, self.owen, new="home", duration=1800)  # When home for 30 minutes
+        self.listen_state(self.notify_owen, self.phone_network, new="cellular",
                                 duration=1800)  # When on cellular data for 30 minutes
 
     """
     Notifies Owen if he's at home without Wifi on.
     """
-    async def notify_owen(self, entity: str, attribute: str, old: str, new: str, kwargs):
-        if await self.utils.is_entity_home(self.owen) and await self.get_state(self.phone_network) == "cellular":
+    def notify_owen(self, entity: str, attribute: str, old: str, new: str, kwargs):
+        if self.utils.is_entity_home(self.owen) and self.get_state(self.phone_network) == "cellular":
             self.log("Notifying Owen that he's home with cellular on.")
-            await self.notify("Your phone is currently connected to cellular data", name="owen")
+            self.notify("Your phone is currently connected to cellular data", name="owen")

@@ -72,7 +72,7 @@ class Climate(hass.Hass):
     night_time_handler: str = None
     away_state_handler: str = None
 
-    async def initialize(self) -> None:
+    def initialize(self) -> None:
         """
         Set up automation callbacks and state.
         """
@@ -80,73 +80,73 @@ class Climate(hass.Hass):
         self.notification_utils = self.get_app("notification_utils")
         self.utils = self.get_app("utils")
         self.entities = ClimateEntities(self)
-        self.day_time = await self.parse_time(await self.get_state(self.entities.day_time))
-        self.night_time = await self.parse_time(await self.get_state(self.entities.night_time))
+        self.day_time = self.parse_time(self.get_state(self.entities.day_time))
+        self.night_time = self.parse_time(self.get_state(self.entities.night_time))
         entity_update_duration: int = 15
-        away_duration_seconds: int = self.get_away_duration_seconds(await self.get_state(self.entities.away_minutes))
+        away_duration_seconds: int = self.get_away_duration_seconds(self.get_state(self.entities.away_minutes))
         # Property updates
-        await self.listen_state(self.on_day_time_updated, self.entities.day_time, duration=entity_update_duration)
-        await self.listen_state(self.on_night_time_updated, self.entities.night_time, duration=entity_update_duration)
-        await self.listen_state(self.on_away_minutes_updated, self.entities.away_minutes,
+        self.listen_state(self.on_day_time_updated, self.entities.day_time, duration=entity_update_duration)
+        self.listen_state(self.on_night_time_updated, self.entities.night_time, duration=entity_update_duration)
+        self.listen_state(self.on_away_minutes_updated, self.entities.away_minutes,
                                 duration=entity_update_duration)
 
         # Temperature update events
-        await self.listen_state(self.on_thermostat_state_updated, self.entities.thermostat_state)
-        await self.listen_state(self.on_person_state_updated, self.entities.allison, new="home")
-        await self.listen_state(self.on_person_state_updated, self.entities.owen, new="home")
-        self.away_state_handler = await self.listen_state(self.on_person_state_updated, self.entities.owen,
+        self.listen_state(self.on_thermostat_state_updated, self.entities.thermostat_state)
+        self.listen_state(self.on_person_state_updated, self.entities.allison, new="home")
+        self.listen_state(self.on_person_state_updated, self.entities.owen, new="home")
+        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen,
                                                           old="home", duration=away_duration_seconds)
-        self.day_time_handler = await self.run_daily(self.on_schedule_time, self.day_time)
-        self.night_time_handler = await self.run_daily(self.on_schedule_time, self.night_time)
-        await self.listen_state(self.on_current_temperature_updated, self.entities.thermostat,
+        self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
+        self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
+        self.listen_state(self.on_current_temperature_updated, self.entities.thermostat,
                                 attribute="current_temperature", duration=300)
 
-    async def on_day_time_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+    def on_day_time_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
         On climate day time set, cancel previous timer and set up a new one for the new time.
         """
 
-        await self.cancel_timer(self.day_time_handler)
-        self.day_time = await self.parse_time(new)
-        self.day_time_handler = await self.run_daily(self.on_schedule_time, self.day_time)
+        self.cancel_timer(self.day_time_handler)
+        self.day_time = self.parse_time(new)
+        self.day_time_handler = self.run_daily(self.on_schedule_time, self.day_time)
         self.log(f"day_time updated from {old} to {new}.")
 
-    async def on_night_time_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+    def on_night_time_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
         On climate nighttime set, cancel previous timer and set up a new one for the new time.
         """
 
-        await self.cancel_timer(self.night_time_handler)
-        self.night_time = await self.parse_time(new)
-        self.night_time_handler = await self.run_daily(self.on_schedule_time, self.night_time)
+        self.cancel_timer(self.night_time_handler)
+        self.night_time = self.parse_time(new)
+        self.night_time_handler = self.run_daily(self.on_schedule_time, self.night_time)
         self.log(f"night_time updated from {old} to {new}.")
 
-    async def on_away_minutes_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+    def on_away_minutes_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
         On away minutes updated, cancel away state listeners and set up new ones with new time.
         """
 
-        await self.cancel_listen_state(self.away_state_handler)
+        self.cancel_listen_state(self.away_state_handler)
         away_duration_seconds = self.get_away_duration_seconds(new)
-        self.away_state_handler = await self.listen_state(self.on_person_state_updated, self.entities.owen, new="away",
+        self.away_state_handler = self.listen_state(self.on_person_state_updated, self.entities.owen, new="away",
                                                           duration=away_duration_seconds)
         self.log(f"away_minutes updated from {old} to {new}.")
 
-    async def on_schedule_time(self, args) -> None:
+    def on_schedule_time(self, args) -> None:
         """
         On climate day time or nighttime, update temperature.
         """
 
-        state: ThermostatState = ThermostatState[await self.get_state(self.entities.thermostat_state)]
-        temperature: int = await self.set_temperature(state)
+        state: ThermostatState = ThermostatState[self.get_state(self.entities.thermostat_state)]
+        temperature: int = self.set_temperature(state)
         self.notify_time_based(f"Climate: Temperature set to {temperature}")
 
-    async def on_person_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+    def on_person_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
         If someone is home or away, set state based on if anybody else is home or not.
         """
 
-        existing_state = ThermostatState[await self.get_state(self.entities.thermostat_state)]
+        existing_state = ThermostatState[self.get_state(self.entities.thermostat_state)]
         new_state = ThermostatState.Home
         anyone_home = self.anyone_home(person=True)
 
@@ -155,21 +155,21 @@ class Climate(hass.Hass):
         elif not anyone_home:
             new_state = ThermostatState.Away
 
-        await self.set_state(self.entities.thermostat_state, state=new_state.name)
+        self.set_state(self.entities.thermostat_state, state=new_state.name)
 
-    async def on_thermostat_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+    def on_thermostat_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
         On state updated, set temperature based on state.
         """
 
-        temperature: int = await self.set_temperature(ThermostatState[new])
+        temperature: int = self.set_temperature(ThermostatState[new])
         self.notify_location_based(f"Climate: Temperature set to {temperature}")
 
     """
     On the current temperature of the thermostat changed, check if it's deviated too much
     from what's currently set at.
     """
-    async def on_current_temperature_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+    def on_current_temperature_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         # If nobody is home, there's no need to notify anyone, because the
         # temperature is expected to be deviating.
         if not self.anyone_home(person=True):
@@ -177,7 +177,7 @@ class Climate(hass.Hass):
 
         previous_temperature = int(old)
         current_temperature = int(new)
-        set_temperature = await self.get_set_temperature()
+        set_temperature = self.get_set_temperature()
         is_heat_mode = self.is_heat_mode()
         temperature_difference = current_temperature - set_temperature
         
@@ -195,13 +195,13 @@ class Climate(hass.Hass):
     """
     Sets the temperature of the thermostat based on the state.
     """
-    async def set_temperature(self, state: ThermostatState) -> int:
-        current_temperature: int = await self.get_set_temperature()
-        new_temperature = await self.get_new_temperature(state)
+    def set_temperature(self, state: ThermostatState) -> int:
+        current_temperature: int = self.get_set_temperature()
+        new_temperature = self.get_new_temperature(state)
         self.log(f"Temperature update requested. Old: {current_temperature} New: {new_temperature}")
 
         if current_temperature != new_temperature:
-            await self.call_service(
+            self.call_service(
                 "climate/set_temperature",
                 entity_id=self.entities.thermostat,
                 temperature=new_temperature,
@@ -212,17 +212,17 @@ class Climate(hass.Hass):
     """
     Updates the correct temperature to set based on the current state.
     """
-    async def get_new_temperature(self, state: ThermostatState) -> int:
-        day_temperature = await self.get_input_number_from_state(self.entities.day_temperature)
-        night_offset = await self.get_input_number_from_state(self.entities.night_offset)
+    def get_new_temperature(self, state: ThermostatState) -> int:
+        day_temperature = self.get_input_number_from_state(self.entities.day_temperature)
+        night_offset = self.get_input_number_from_state(self.entities.night_offset)
 
         if state == ThermostatState.Gone:
-            gone_offset = await self.get_input_number_from_state(self.entities.gone_offset)
+            gone_offset = self.get_input_number_from_state(self.entities.gone_offset)
             return day_temperature + self.get_offset(gone_offset)
 
         temperature = day_temperature if self.is_day() else day_temperature - night_offset
         if state == ThermostatState.Away:
-            away_offset = await self.get_input_number_from_state(self.entities.away_offset)
+            away_offset = self.get_input_number_from_state(self.entities.away_offset)
             return temperature + self.get_offset(away_offset)
 
         return temperature
@@ -231,11 +231,11 @@ class Climate(hass.Hass):
     Day is considered the time between the start time of the day temperature
     and the start time of the night temperature.
     """
-    async def is_day(self) -> bool:
+    def is_day(self) -> bool:
         # Subtract 5 seconds from the user set day time to get rid of an edge case where
         # the automation running fast could result in `now_is_between` returning false.
         day_time = self.utils.add_seconds(self.day_time, -5)
-        return await self.now_is_between(str(day_time), str(self.night_time))
+        return self.now_is_between(str(day_time), str(self.night_time))
 
     """
     Gets the correct offset, based on if the thermostat is in heat or cool mode.
@@ -278,11 +278,11 @@ class Climate(hass.Hass):
     """
     Gets the integer representation of the state of the input entity.
     """
-    async def get_input_number_from_state(self, entity_id: str) -> int:
+    def get_input_number_from_state(self, entity_id: str) -> int:
         return self.utils.get_input_number_integer(self.get_state(entity_id))
 
     """
     Gets the currently set temperature for the thermostat.
     """
-    async def get_set_temperature(self) -> int:
-        return int(await self.get_state(self.entities.thermostat, attribute = "temperature"))
+    def get_set_temperature(self) -> int:
+        return int(self.get_state(self.entities.thermostat, attribute = "temperature"))

@@ -16,7 +16,7 @@ class Security(hass.Hass):
     front_door_lock: str
     owen: str
 
-    async def initialize(self) -> None:
+    def initialize(self) -> None:
         """
         Sets up the security automations.
         """
@@ -26,11 +26,11 @@ class Security(hass.Hass):
         self.front_door_lock = self.args["front_door_lock"]
         self.owen = self.args["owen"]
 
-        await self.listen_state(self.on_people_away, self.allison, old="not_home", duration=60)
-        await self.listen_state(self.on_people_away, self.owen, old="not_home", duration=60)
-        await self.run_daily(self.on_night_time, "21:30:00")
+        self.listen_state(self.on_people_away, self.allison, old="not_home", duration=60)
+        self.listen_state(self.on_people_away, self.owen, old="not_home", duration=60)
+        self.run_daily(self.on_night_time, "21:30:00")
 
-    async def on_people_away(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+    def on_people_away(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
         When everyone is away from home, checks if the front door is locked and lock it if it is not.
         """
@@ -38,25 +38,25 @@ class Security(hass.Hass):
         if self.anyone_home(person=True):
             return
 
-        await self.lock_front_door()
+        self.lock_front_door()
 
-    async def on_night_time(self, args) -> None:
+    def on_night_time(self, args) -> None:
         """
         At night, checks if the front door is locked and lock it if it is not.
         """
 
-        await self.lock_front_door()
+        self.lock_front_door()
 
-    async def lock_front_door(self) -> None:
+    def lock_front_door(self) -> None:
         """
         Locks the front door and registers a callback to verify door is locked after 10 seconds.
         """
         if not self.is_front_door_locked():
             self.log("Locking front door.")
-            await self.call_service("lock/lock", entity_id = self.front_door_lock)
-            await self.run_in(self.verify_front_door_locked, 10)
+            self.call_service("lock/lock", entity_id = self.front_door_lock)
+            self.run_in(self.verify_front_door_locked, 10)
 
-    async def verify_front_door_locked(self, args) -> None:
+    def verify_front_door_locked(self, args) -> None:
         """
         After requesting the door has been locked, verifies that the door is locked. Notifies everyone regardless.
         """
@@ -64,11 +64,11 @@ class Security(hass.Hass):
         self.log(f"Front door state: {self.get_state(self.front_door_lock)}")
         message = "Locked the front door." \
             if self.is_front_door_locked() else "Attempted to lock the front door but failed."
-        await self.notification_utils.notify_users(message, Person.All)
+        self.notification_utils.notify_users(message, Person.All)
 
-    async def is_front_door_locked(self) -> bool:
+    def is_front_door_locked(self) -> bool:
         """
         Returns if the front door is locked.
         """
 
-        return await self.get_state(self.front_door_lock) == "locked"
+        return self.get_state(self.front_door_lock) == "locked"
