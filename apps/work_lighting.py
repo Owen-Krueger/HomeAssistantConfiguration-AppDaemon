@@ -34,9 +34,6 @@ class WorkLighting(hass.Hass):
     def on_office_light_off(self, entity: str, attribute: str, old: str, new: str, kwargs):
         self.log("Executing automations due to office lights being turned off.")
 
-        self.create_task(self.utils.is_entity_on(self.dining_room_lights))
-        self.utils.is_entity_on(self.dining_room_lights)
-
         # If Owen is home, it's a work day, and it's around lunchtime.
         if (not self.utils.is_entity_on(self.mode_guest) and
                 not self.utils.is_entity_on(self.dining_room_lights) and
