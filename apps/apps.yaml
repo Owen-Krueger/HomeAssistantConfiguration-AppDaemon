@@ -23,6 +23,8 @@ climate:
     - notification_utils
     - utils
   allison: person.allison
+  bedroom_fan: switch.bedroom_fan
+  bedroom_temperature: sensor.bedroom_temperature_sensor_temperature
   climate_away_minutes: input_number.climate_away_minutes
   climate_away_offset: input_number.climate_away_offset
   climate_gone_offset: input_number.climate_gone_offset

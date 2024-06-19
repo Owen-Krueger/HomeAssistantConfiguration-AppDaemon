@@ -41,6 +41,8 @@ class ClimateEntities:
     zone_near_home: str
     notify_time: str
     notify_location: str
+    bedroom_fan: str
+    bedroom_temperature: str
 
     def __init__(self, hass_instance: hass.Hass) -> None:
         self.allison = hass_instance.args["allison"]
@@ -59,6 +61,8 @@ class ClimateEntities:
         self.zone_near_home = hass_instance.args["zone_near_home"]
         self.notify_time = hass_instance.args["notify_time"]
         self.notify_location = hass_instance.args["notify_location"]
+        self.bedroom_fan = hass_instance.args["bedroom_fan"]
+        self.bedroom_temperature = hass_instance.args["bedroom_temperature"]
 
 
 class Climate(hass.Hass):
@@ -145,6 +149,9 @@ class Climate(hass.Hass):
         temperature: int = self.set_temperature(state)
         self.notify_time_based(f"Climate: Temperature set to {temperature}")
 
+        if not self.is_day():
+            self.turn_on_bedroom_fan()
+
     def on_person_state_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
         """
         If someone is home or away, set state based on if anybody else is home or not.
@@ -166,15 +173,19 @@ class Climate(hass.Hass):
         On state updated, set temperature based on state.
         """
 
-        temperature: int = self.set_temperature(ThermostatState[new])
+        new_state = ThermostatState[new]
+        temperature: int = self.set_temperature(new_state)
         self.notify_location_based(f"Climate: Temperature set to {temperature}")
 
-    """
-    On the current temperature of the thermostat changed, check if it's deviated too much
-    from what's currently set at.
-    """
+        if new_state == ThermostatState.Home and not self.is_day():
+            self.turn_on_bedroom_fan()
 
     def on_current_temperature_updated(self, entity: str, attribute: str, old: str, new: str, args) -> None:
+        """
+        On the current temperature of the thermostat changed, check if it's deviated too much
+        from what's currently set at.
+        """
+
         # If nobody is home, there's no need to notify anyone, because the
         # temperature is expected to be deviating.
         if not self.anyone_home(person=True):
@@ -199,11 +210,11 @@ class Climate(hass.Hass):
             self.notification_utils.notify_users(
                 f"House is too cold! (Current: {current_temperature} Set: {set_temperature})", Person.Owen)
 
-    """
-    Sets the temperature of the thermostat based on the state.
-    """
-
     def set_temperature(self, state: ThermostatState) -> int:
+        """
+        Sets the temperature of the thermostat based on the state.
+        """
+
         current_temperature: int = self.get_set_temperature()
         new_temperature = self.get_new_temperature(state)
         self.log(f"Temperature update requested. Old: {current_temperature} New: {new_temperature}")
@@ -217,11 +228,11 @@ class Climate(hass.Hass):
 
         return new_temperature
 
-    """
-    Updates the correct temperature to set based on the current state.
-    """
-
     def get_new_temperature(self, state: ThermostatState) -> int:
+        """
+        Updates the correct temperature to set based on the current state.
+        """
+
         day_temperature = self.get_input_number_from_state(self.entities.day_temperature)
         night_offset = self.get_input_number_from_state(self.entities.night_offset)
 
@@ -236,70 +247,79 @@ class Climate(hass.Hass):
 
         return temperature
 
-    """
-    Day is considered the time between the start time of the day temperature
-    and the start time of the night temperature.
-    """
-
     def is_day(self) -> bool:
+        """
+        Day is considered the time between the start time of the day temperature
+        and the start time of the night temperature.
+        """
+
         # Subtract 5 seconds from the user set day time to get rid of an edge case where
         # the automation running fast could result in `now_is_between` returning false.
         day_time = self.utils.add_seconds(self.day_time, -5)
         return self.now_is_between(str(day_time), str(self.night_time))
 
-    """
-    Gets the correct offset, based on if the thermostat is in heat or cool mode.
-    If mode is heat, we want to be cooler, so we multiply the offset by -1.
-    If mode is cool, we want to be hotter, so the offset stays as is.
-    Example: Offset = 5
-    Heat: -5
-    Cool: 5
-    """
-
     def get_offset(self, offset: int) -> int:
+        """
+        Gets the correct offset, based on if the thermostat is in heat or cool mode.
+        If mode is heat, we want to be cooler, so we multiply the offset by -1.
+        If mode is cool, we want to be hotter, so the offset stays as is.
+        Example: Offset = 5
+        Heat: -5
+        Cool: 5
+        """
+        
         return offset * -1 if self.is_heat_mode() else offset
 
-    """
-    Whether on not the thermostat is currently heating or cooling.
-    """
-
     def is_heat_mode(self) -> bool:
+        """
+        Whether on not the thermostat is currently heating or cooling.
+        """
+
         return bool(self.get_state(self.entities.thermostat) == "heat")
 
-    """
-    Notify user if notify user (time based) boolean is set.
-    """
-
     def notify_time_based(self, message: str) -> None:
+        """
+        Notify user if notify user (time based) boolean is set.
+        """
+
         if self.utils.is_entity_on(self.entities.notify_time):
             self.notification_utils.notify_users(message, Person.Owen, True)
 
-    """
-    Notify user if notify user (location based) boolean is set.
-    """
-
     def notify_location_based(self, message: str) -> None:
+        """
+        Notify user if notify user (location based) boolean is set.
+        """
+        
         if self.utils.is_entity_on(self.entities.notify_location):
             self.notification_utils.notify_users(message, Person.Owen)
 
-    """
-    Converts state string to an integer (minutes) and multiplies to get seconds
-    needed for AppDaemon durations.
-    """
-
     def get_away_duration_seconds(self, state: str) -> int:
+        """
+        Converts state string to an integer (minutes) and multiplies to get seconds
+        needed for AppDaemon durations.
+        """
+        
         return self.utils.get_input_number_integer(state) * 60
 
-    """
-    Gets the integer representation of the state of the input entity.
-    """
-
     def get_input_number_from_state(self, entity_id: str) -> int:
+        """
+        Gets the integer representation of the state of the input entity.
+        """
+
         return self.utils.get_input_number_integer(self.get_state(entity_id))
 
-    """
-    Gets the currently set temperature for the thermostat.
-    """
-
     def get_set_temperature(self) -> int:
+        """
+        Gets the currently set temperature for the thermostat.
+        """
+
         return int(self.get_state(self.entities.thermostat, attribute="temperature"))
+
+    def turn_on_bedroom_fan(self) -> None:
+        """
+        Checks if the bedroom is currently warmer than the set temperature. If it's too
+        hot, the bedroom fan is turned on.
+        """
+
+        if float(self.get_state(self.bedroom_temperature)) > float(self.get_set_temperature):
+            self.turn_on(self.bedroom_fan)
