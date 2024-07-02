@@ -321,5 +321,6 @@ class Climate(hass.Hass):
         hot, the bedroom fan is turned on.
         """
 
-        if float(self.get_state(self.bedroom_temperature)) > float(self.get_set_temperature):
-            self.turn_on(self.bedroom_fan)
+        if float(self.get_state(self.entities.bedroom_temperature)) > float(self.get_set_temperature()):
+            self.log("Turning on bedroom fan.")
+            self.turn_on(self.entities.bedroom_fan)
