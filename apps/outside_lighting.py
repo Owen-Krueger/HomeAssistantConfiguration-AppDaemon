@@ -45,11 +45,11 @@ class OutsideLighting(hass.Hass):
         # Only check if execution time needs defaulting when boolean has been off for 30 seconds.
         self.listen_state(self.on_override_boolean_turned_off, self.should_override_time, new="off", duration=30)
         self.listen_state(self.turn_on_front_porch_location_based, self.proximity_owen,
-                                old=lambda x: int(x) > 5,
-                                new=lambda x: int(x) <= 5)  # When getting close to home.
+                                old=lambda x: float(x) > 5,
+                                new=lambda x: float(x) <= 5)  # When getting close to home.
         self.listen_state(self.turn_on_front_porch_location_based, self.proximity_allison,
-                                old=lambda x: int(x) > 5,
-                                new=lambda x: int(x) <= 5)  # When getting close to home.
+                                old=lambda x: float(x) > 5,
+                                new=lambda x: float(x) <= 5)  # When getting close to home.
         self.listen_state(self.turn_off_front_porch_location_based, self.allison, new="home",
                                 duration=300)  # When home for 5 minutes.
         self.listen_state(self.turn_off_front_porch_location_based, self.owen, new="home",
@@ -150,10 +150,11 @@ class OutsideLighting(hass.Hass):
     """
 
     def someone_close_to_home(self):
-        allison_close = self.utils.close_to_home(self.proximity_allison)
-        owen_close = self.utils.close_to_home(self.proximity_owen)
+        return False
+        # allison_close = self.utils.close_to_home(self.proximity_allison)
+        # owen_close = self.utils.close_to_home(self.proximity_owen)
 
-        return allison_close or owen_close
+        # return allison_close or owen_close
 
     """
     Returns if it's late (but not too late...)
