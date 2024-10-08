@@ -93,8 +93,8 @@ outside_lighting:
   holiday_mode: input_boolean.holiday_mode
   owen: person.owen
   porch_off_time: input_datetime.light_front_porch_off_time
-  proximity_allison: proximity.allison
-  proximity_owen: proximity.owen
+  proximity_allison: sensor.allison_distance_miles
+  proximity_owen: sensor.owen_distance_miles
   should_override_time: input_boolean.light_override_front_porch_off
 owen_phone_wifi:
   module: owen_phone_wifi
@@ -138,6 +138,8 @@ ping_entities:
       ping: button.stairway_lights_ping
     - entity: switch.utility_room_lights
       ping: button.utility_room_lights_ping
+    - entity: lock.front_door_lock
+      ping: button.front_door_lock_ping
 security:
   module: security
   class: Security
